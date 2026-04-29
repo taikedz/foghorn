@@ -29,7 +29,8 @@ def parse_args():
     listen_p = subs.add_parser("listen")
     listen_p.add_argument("--bind", default="all")
     listen_p.add_argument("--broadcast", "-B", action="store_true")
-    listen_p.add_argument("--sweep-interval", "-N", default=30 * MINUTES)
+    listen_p.add_argument("--sweep-interval", "-N", type=int, default=30 * MINUTES, help="How frequently to sweep the database entries (seconds)")
+    listen_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
 
     send_p = subs.add_parser("send")
     send_p.add_argument("ip")
@@ -54,7 +55,7 @@ def main():
     while True:
         try:
             if args.action == "listen":
-                sw = registry.Sweeper(reg, args.sweep_interval)
+                sw = registry.Sweeper(args.database, args.sweep_interval, args.age_limit)
                 sw.start()
 
                 listener.listen(reg, args.bind, args.broadcast)

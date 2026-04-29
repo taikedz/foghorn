@@ -33,6 +33,16 @@ class Registry:
             self._conn.commit()
 
 
+    def select(self, command, holders=()) -> list[list]:
+        assert self._conn is not None, "DB connection not active!"
+        with self._shared_lock:
+            cursor = self._conn.cursor()
+            cursor.execute(command, holders)
+            rows = cursor.fetchall()
+            self._conn.commit()
+        return rows
+
+
     def register(self, name, ip):
         timestamp = datetime.datetime.now().isoformat()
         self.execute(
@@ -40,12 +50,16 @@ class Registry:
             (name, ip, timestamp)
             )
         
-    def sweep(self, olderthan):
+    def sweep(self, olderthan:datetime.datetime):
         """ Select all entries from DB
 
         Find all that are older than specified date, remove them
         """
-        # one-time action
+        peers = self.select("SELECT id,seen FROM Peers")
+        rmpeers = {id:dt for id,dt in peers if datetime.datetime.fromisoformat(dt) < olderthan}
+        #print(f"Should remove {rmpeers}")
+        for id in rmpeers.keys():
+            self.execute("DELETE FROM Peers WHERE id = ?;", (id, ))
 
     def ip_of(self, hostname:list[str]|str):
         """ Find all seen IPs for given hostname(s)
@@ -59,15 +73,18 @@ class Registry:
 
 
 class Sweeper(threading.Thread):
-    def __init__(self, registry, sweep_interval):
+    def __init__(self, dbfile, sweep_interval, age_limit):
         threading.Thread.__init__(self, daemon=True)
-        self.registry:'Registry' = registry
-        self._interval = sweep_interval
+        self._dbfile = dbfile
+        self._interval = sweep_interval # seconds
+        self._limit = age_limit
 
     def run(self):
+        registry = Registry(self._dbfile)
         while True:
             try:
-                self.registry.sweep(60 * MINUTES)
+                oldest = datetime.datetime.now() - datetime.timedelta(seconds=self._limit)
+                registry.sweep(oldest)
             except KeyboardInterrupt:
                 raise
             except Exception as e:
