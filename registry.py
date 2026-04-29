@@ -65,17 +65,21 @@ class Registry:
         """ Find all seen IPs for given hostname(s)
         """
         res = self.select("SELECT seen,ip FROM Peers WHERE hostname = ?;", (hostname,))
-        for t,r in res:
-            print(f"{t}  : {r}")
+        _print_unique_pairs(res)
 
 
     def name_of(self, ip:str):
         """ Find all seen names for given IP
         """
         res = self.select("SELECT seen,hostname FROM Peers WHERE ip = ?;", (ip,))
-        for t,r in res:
-            print(f"{t}  : {r}")
+        _print_unique_pairs(res)
 
+
+def _print_unique_pairs(res_sequence):
+    print("\n".join(
+        list(set([v for t,v in res_sequence]))
+        )
+    )
 
 
 class Sweeper(threading.Thread):

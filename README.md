@@ -12,9 +12,11 @@ Run `foghorn.py listen -B all` to listen for broadcast packets from a foghorn se
 
 Run `foghorn.py send -B 192.168.3.255` to broadcast on the `192.168.3.0/24` subnetwork such that all listeners will receive. Note that some organisations block chatter on broadcast addresses.
 
+Automatically cleans up old entries in the peers database older than a given amount of time - default 30 minutes.
+
 # Query
 
 Query the history of machines that have been reporting in:
 
-* for a name, see all IPs that claim to be that name
-* for an IP, see all the names that claim to have that IP
+* for a name, see all IPs that claim to be that name : `foghorn.py query --host testvm1`
+* for an IP, see all the names that claim to have that IP : `foghorn.py query --ip 192.168.3.3`
