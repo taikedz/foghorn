@@ -2,13 +2,15 @@
 
 A blunt beacon that announces its presence.
 
+For when you're not IT and you need a poor-sod's host discovery.
+
 A troubleshooting tool, put it on all machines, and find misconfigured IPs and hostnames.
 
 # Send and listen
 
 Run `foghorn.py listen -B all` to listen for broadcast packets from a foghorn sender.
 
-Run `foghorn.py send -B 192.168.3.255` to broadcast on the `192/168/3.0/24` subnetwork such that all listeners will receive.
+Run `foghorn.py send -B 192.168.3.255` to broadcast on the `192.168.3.0/24` subnetwork such that all listeners will receive. Note that some organisations block chatter on broadcast addresses.
 
 # Query
 
