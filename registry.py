@@ -61,14 +61,20 @@ class Registry:
         for id in rmpeers.keys():
             self.execute("DELETE FROM Peers WHERE id = ?;", (id, ))
 
-    def ip_of(self, hostname:list[str]|str):
+    def ip_of(self, hostname:str):
         """ Find all seen IPs for given hostname(s)
         """
+        res = self.select("SELECT seen,ip FROM Peers WHERE hostname = ?;", (hostname,))
+        for t,r in res:
+            print(f"{t}  : {r}")
 
 
     def name_of(self, ip:str):
         """ Find all seen names for given IP
         """
+        res = self.select("SELECT seen,hostname FROM Peers WHERE ip = ?;", (ip,))
+        for t,r in res:
+            print(f"{t}  : {r}")
 
 
 

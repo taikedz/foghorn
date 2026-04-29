@@ -39,8 +39,8 @@ def parse_args():
     send_p.add_argument("--interval", "-n", default=10 * MINUTES, type=int)
 
     query_p = subs.add_parser("query")
-    query_p.add_argument("--host", "-H")
-    query_p.add_argument("--ip", "-P")
+    query_p.add_argument("--host", "-H", default=None, help="Hostname to get the IP of")
+    query_p.add_argument("--ip", "-P", default=None, help="IP to get the hostname of")
 
     return parser.parse_args()
 
@@ -64,7 +64,11 @@ def main():
                 sender.send(args.ip, args.interval, args.broadcast, args.message)
 
             elif args.action == "query":
-                reg.ip_of(args.ip) # TODO
+                if args.ip is not None:
+                    reg.name_of(args.ip)
+                if args.host is not None:
+                    reg.ip_of(args.host)
+                return
 
             else:
                 print(f"Unknown action {repr(args.action)} . Run with '--help'")
