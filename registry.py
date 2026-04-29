@@ -17,10 +17,10 @@ class Registry:
         if not exists:
             self.execute("""
                 CREATE TABLE Peers (
-                        id int PRIMARY KEY,
-                        hostname string,
-                        ip string,
-                        seen datetime
+                        id INTEGER PRIMARY KEY,
+                        hostname STRING,
+                        ip STRING,
+                        seen DATETIME
                         );
                         """)
 
