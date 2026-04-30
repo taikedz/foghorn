@@ -75,6 +75,16 @@ class Registry:
         _print_unique_pairs(res)
 
 
+    def dump(self):
+        """ Print all entries
+        """
+        res = self.select("SELECT seen,hostname FROM Peers;")
+        print("\n".join(
+            list(set([f"{t}: {v}" for t,v in res]))
+            )
+        )
+
+
 def _print_unique_pairs(res_sequence):
     print("\n".join(
         list(set([v for t,v in res_sequence]))

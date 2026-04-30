@@ -6,6 +6,10 @@ from const import CONFIG
 
 
 def send(send_ip, interval, broadcast, message):
+    if send_ip is None:
+        send_ip = CONFIG.get("SERVER_IP")
+    assert send_ip, f"Server IP specified in neither arguments nor config."
+
     send_addr = (send_ip, int(CONFIG.get("port")))
     message = {"message": message, "host": socket.gethostname()}
 

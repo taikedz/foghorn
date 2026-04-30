@@ -6,8 +6,8 @@ defvals = {
 }
 
 CONFIG = loadConfigs([
-    "/etc/foghorn/settings.env",
-    "~/.config/foghorn/settings.env",
+    "/etc/foghorn/config.env",
+    "~/.config/foghorn/config.env",
     "./foghorn-config.env",
 ], defaults=defvals)
 

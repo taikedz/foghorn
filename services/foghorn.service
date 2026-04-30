@@ -1,0 +1,7 @@
+[Unit]
+Description=Foghorn %MODE%
+After=network.target
+
+[Service]
+ExecStart=%COMMAND%
+Restart=on-abort

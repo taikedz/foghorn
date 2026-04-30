@@ -5,8 +5,11 @@ import registry
 from const import CONFIG
 
 def listen(registry:registry.Registry, listen_ip, broadcast):
-    if listen_ip == "all":
-        listen_ip = ""
+    if listen_ip is None:
+        listen_ip = CONFIG.get("BIND")
+    if listen_ip is None or listen_ip == "all":
+        listen_ip = "0.0.0.0"
+
     bind_addr = (listen_ip, int(CONFIG.get("port")) )
     print(f"Listening on {bind_addr}")
 
