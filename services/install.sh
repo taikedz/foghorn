@@ -39,7 +39,7 @@ main() {
     esac
 
     (
-        sed -e "s/%MODE%/$MODE/" -e "s|%COMMAND%|python3 $PARENTDIR/foghorn.py --log /var/log/foghorn/foghorn-$MODE.log $ACTION|"
+        sed -e "s/%MODE%/$MODE/" -e "s|%COMMAND%|python3 $PARENTDIR/src/foghorn.py --log /var/log/foghorn/foghorn-$MODE.log $ACTION|"
     ) < "$HEREDIR/foghorn.service" > "${service_base_path}-$MODE.service"
 
     add_config
