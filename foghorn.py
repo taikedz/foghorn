@@ -45,6 +45,18 @@ def parse_args():
     return parser.parse_args()
 
 
+def do_query(reg:registry.Registry, args:argparse.Namespace):
+    relevant = {
+        "ip": args.ip,
+        "host": args.host,
+    }
+    assert len([x for x in relevant.values() if x is not None]) == 1, f"Specify one of {', '.join(relevant.keys())}"
+
+    if relevant["ip"] is not None:
+        reg.name_of(relevant["ip"])
+    if relevant["host"] is not None:
+        reg.ip_of(relevant["host"])
+
 
 def main():
     args = parse_args()
@@ -64,12 +76,7 @@ def main():
                 sender.send(args.ip, args.interval, args.broadcast, args.message)
 
             elif args.action == "query":
-                assert not ( all([args.ip, args.host]) or not any([args.ip,args.host]) ), f"Specify one of IP or hostname"
-
-                if args.ip is not None:
-                    reg.name_of(args.ip)
-                if args.host is not None:
-                    reg.ip_of(args.host)
+                do_query(reg, args)
                 return
 
             else:
