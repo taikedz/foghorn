@@ -8,6 +8,7 @@ Listen for others pinging
 """
 
 import argparse
+import time
 
 from const import MINUTES
 import listener
@@ -42,6 +43,7 @@ def parse_args():
     query_p.add_argument("--host", "-H", default=None, help="Hostname to get the IP of")
     query_p.add_argument("--ip", "-P", default=None, help="IP to get the hostname of")
     query_p.add_argument("--dump", action="store_true", help="Dump entries")
+    query_p.add_argument("--hosts", action="store_true", help="Print entries in /etc/hosts compatible format")
 
     return parser.parse_args()
 
@@ -51,6 +53,7 @@ def do_query(reg:registry.Registry, args:argparse.Namespace):
         "ip": args.ip,
         "host": args.host,
         "dump": args.dump,
+        "hosts": args.hosts,
     }
     assert len([x for x in relevant.values() if x not in [None,False]]) == 1, f"Specify one of {', '.join(relevant.keys())}"
 
@@ -60,6 +63,8 @@ def do_query(reg:registry.Registry, args:argparse.Namespace):
         reg.ip_of(relevant["host"])
     if relevant["dump"]:
         reg.dump()
+    if relevant["hosts"]:
+        reg.hosts()
 
 
 def main():
@@ -93,9 +98,12 @@ def main():
         except AssertionError as e:
             print(e)
             exit(1)
+        except (ValueError, AssertionError, KeyError, AttributeError):
+            raise
         except Exception as e:
             print(f"ERROR : {e}")
             print("Starting again....\n=========")
+            time.sleep(0.5)
 
 
 if __name__ == "__main__":

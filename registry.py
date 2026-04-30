@@ -64,32 +64,40 @@ class Registry:
     def ip_of(self, hostname:str):
         """ Find all seen IPs for given hostname(s)
         """
-        res = self.select("SELECT seen,ip FROM Peers WHERE hostname = ?;", (hostname,))
-        _print_unique_pairs(res)
+        res = self.select("SELECT ip FROM Peers WHERE hostname = ?;", (hostname,))
+        print("\n".join(list(set([v[0] for v in res]))))
 
 
     def name_of(self, ip:str):
         """ Find all seen names for given IP
         """
-        res = self.select("SELECT seen,hostname FROM Peers WHERE ip = ?;", (ip,))
-        _print_unique_pairs(res)
+        res = self.select("SELECT hostname FROM Peers WHERE ip = ?;", (ip,))
+        print("\n".join(list(set([v[0] for v in res]))))
 
 
     def dump(self):
         """ Print all entries
         """
-        res = self.select("SELECT seen,hostname FROM Peers;")
+        res = self.select("SELECT seen,ip,hostname FROM Peers;")
         print("\n".join(
-            list(set([f"{t}: {v}" for t,v in res]))
+            list(set([f"{i} {h}   # {t}" for t,i,h in res]))
             )
         )
 
 
-def _print_unique_pairs(res_sequence):
-    print("\n".join(
-        list(set([v for t,v in res_sequence]))
-        )
-    )
+    def hosts(self):
+        """ Print all entries
+        """
+        res = self.select("SELECT ip,hostname FROM Peers;")
+        ips = {}
+        for ip,hostname in res:
+            if ip not in ips:
+                ips[ip] = []
+            if hostname not in ips[ip]:
+                ips[ip].append(hostname)
+
+        for ip, hostlist in ips.items():
+            print(f"{ip}  {' '.join(hostlist)}")
 
 
 class Sweeper(threading.Thread):
