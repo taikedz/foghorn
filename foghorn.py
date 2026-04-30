@@ -64,6 +64,8 @@ def main():
                 sender.send(args.ip, args.interval, args.broadcast, args.message)
 
             elif args.action == "query":
+                assert not ( all([args.ip, args.host]) or not any([args.ip,args.host]) ), f"Specify one of IP or hostname"
+
                 if args.ip is not None:
                     reg.name_of(args.ip)
                 if args.host is not None:
