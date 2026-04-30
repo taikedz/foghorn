@@ -35,3 +35,9 @@ Config keys currently available are `SERVER_IP` (client's `ip` argument) and `BI
 Run `bash services/install.sh {client|server}` to install either of a client (sender) or a server (listener).
 
 These must then be configured at `/etc/foghorn/config.env`
+
+# License
+
+Foghorn is covered by the LGPLv3 license, (C) Tai Kedzierski
+
+You may include it in proprietary solutions.
