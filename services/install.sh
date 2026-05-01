@@ -4,6 +4,8 @@ THIS="$(readlink -f "$0")"
 HEREDIR="$(dirname "$THIS")"
 PARENTDIR="$(readlink -f "$HEREDIR/..")"
 
+set -euo pipefail
+
 fail() {
     n="$1"; shift
     echo "$*"
@@ -18,11 +20,17 @@ add_config() {
 }
 
 main() {
+    if [[ "$UID" != 0 ]]; then
+        echo "You must be root to run this script"
+        exit 1
+    fi
+
     service_base_path=/etc/systemd/system/foghorn
 
     action="$1"; shift || fail 1 "No action specified - try 'listener' or 'sender'"
 
     mkdir -p /var/log/foghorn
+    mkdir -p /var/foghorn
 
     case "$action" in
     listener|server)
@@ -48,7 +56,7 @@ main() {
     systemctl enable "foghorn-$MODE"
 
     echo "Foghorn $MODE service installed."
-    echo "Configure via /etc/foghorn/config.env"
+    echo -e "\033[32;1mConfigure\033[0m via /etc/foghorn/config.env"
     echo "Start via 'systemctl start foghorn-$MODE'"
 }
 

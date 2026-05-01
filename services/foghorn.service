@@ -1,7 +1,13 @@
 [Unit]
 Description=Foghorn %MODE%
 After=network.target
+# TODO - add a stdout/stderr log redirect
 
 [Service]
 ExecStart=%COMMAND%
 Restart=on-abort
+
+[Install]
+After=netowrk-online.target
+Wants=network-online.target
+WantedBy=multi-user.target

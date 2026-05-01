@@ -10,7 +10,7 @@ Listen for others pinging
 import argparse
 import time
 
-from const import MINUTES
+from const import MINUTES, CONFIG
 import listener
 import registry
 import sender
@@ -23,12 +23,14 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--log", default=None) # NOT IMPLEMENTED
-    parser.add_argument("--database", "-D", default="peers.sqlite")
+    parser.add_argument("--database", "-D", default=CONFIG.get("DATABASE"))
 
     subs = parser.add_subparsers(dest="action", required=True)
 
+    listen_p = subs.add_parser("dump-config")
+
     listen_p = subs.add_parser("listen")
-    listen_p.add_argument("--bind", default=None)
+    listen_p.add_argument("--bind", default=CONFIG.get("BIND"))
     listen_p.add_argument("--broadcast", "-B", action="store_true")
     listen_p.add_argument("--sweep-interval", "-N", type=int, default=30 * MINUTES, help="How frequently to sweep the database entries (seconds)")
     listen_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
@@ -75,6 +77,10 @@ def main():
     # Keep alive always
     while True:
         try:
+            if args.action == "dump-config":
+                print(CONFIG.asDict())
+                return
+
             if args.action == "listen":
                 sw = registry.Sweeper(args.database, args.sweep_interval, args.age_limit)
                 sw.start()

@@ -2,7 +2,8 @@ from config import loadConfigs
 
 
 defvals = {
-    "port": 62001
+    "PORT": 62001,
+    "DATABASE": "peers.sqlite",
 }
 
 CONFIG = loadConfigs([

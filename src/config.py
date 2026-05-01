@@ -42,10 +42,12 @@ class Config:
         return self
     
 
-    def get(self, k) -> str:
+    def get(self, k, default=None) -> str|None:
         v = self._data.get(k)
         if v is None and self._sub:
             v = self._sub.get(k)
+        if v is None:
+            v = default
         return v
     
 
@@ -82,18 +84,22 @@ def loadConfigs(paths:list[str], defaults:dict|None = None) -> Config:
 
 class TestConfig:
     def test_config(self):
-        with open("etc-config", 'w') as fh:
+        with open("etc-config.env", 'w') as fh:
             fh.write("PATH=etc\n")
             fh.write("GLOBAL=world\n")
-        with open("home-config", 'w') as fh:
+        with open("home-config.env", 'w') as fh:
             fh.write("PATH=home\n")
             fh.write("SCOPE=home\n")
 
-        conf1 = Config("etc-config")
-        conf2 = Config("home-config").over(conf1)
+        conf1 = Config("etc-config.env")
+        conf2 = Config("home-config.env").over(conf1)
 
         assert conf2.get("PATH") == "home"
         assert conf2.get("GLOBAL") == "world"
         assert conf2.get("SCOPE") == "home"
 
         assert conf2.asDict() == {"PATH": "home", "SCOPE":"home", "GLOBAL": "world"}
+
+        assert conf2.get("GLOBAL", "oops") == "world"
+        assert conf2.get("SCOPE", "oops") == "home"
+        assert conf2.get("UNKNOWN", "oops") == "oops"

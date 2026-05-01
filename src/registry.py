@@ -7,7 +7,7 @@ import threading
 from const import MINUTES
 
 class Registry:
-    def __init__(self, dbfile="peers.sqlite"):
+    def __init__(self, dbfile):
         self._dbfile = dbfile
         self._shared_lock = threading.RLock()
 
