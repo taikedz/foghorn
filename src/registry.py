@@ -7,12 +7,15 @@ import threading
 from const import MINUTES
 
 class Registry:
+    # All instances will share this lock, this is intentional.
+    #  It seems sqlite connections do _not_ multithread, so we
+    #  need to prevent different registry instances from colliding.
+    REGISTRY_LOCK = threading.RLock()
+
     def __init__(self, dbfile):
         self._dbfile = dbfile
-        self._shared_lock = threading.RLock()
 
         exists = os.path.exists(self._dbfile)
-        self._conn = sqlite3.connect(self._dbfile)
 
         if not exists:
             self.execute("""
@@ -26,20 +29,18 @@ class Registry:
 
 
     def execute(self, command, holders=()):
-        assert self._conn is not None, "DB connection not active!"
-        with self._shared_lock:
-            cursor = self._conn.cursor()
+        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as NEW_CONN:
+            cursor = NEW_CONN.cursor()
             cursor.execute(command, holders)
-            self._conn.commit()
+            NEW_CONN.commit()
 
 
     def select(self, command, holders=()) -> list[list]:
-        assert self._conn is not None, "DB connection not active!"
-        with self._shared_lock:
-            cursor = self._conn.cursor()
+        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as NEW_CONN:
+            cursor = NEW_CONN.cursor()
             cursor.execute(command, holders)
             rows = cursor.fetchall()
-            self._conn.commit()
+            NEW_CONN.commit()
         return rows
 
 
@@ -85,7 +86,7 @@ class Registry:
         )
 
 
-    def hosts(self):
+    def get_hosts(self) -> dict[str,list[str]]:
         """ Print all entries
         """
         res = self.select("SELECT ip,hostname FROM Peers;")
@@ -96,6 +97,11 @@ class Registry:
             if hostname not in ips[ip]:
                 ips[ip].append(hostname)
 
+        return ips
+
+
+    def print_hosts(self):
+        ips = self.get_hosts()
         for ip, hostlist in ips.items():
             print(f"{ip}  {' '.join(hostlist)}")
 
@@ -109,6 +115,7 @@ class Sweeper(threading.Thread):
 
     def run(self):
         registry = Registry(self._dbfile)
+        print(f"Sweeper running every {self._interval} seconds. Purge entries older than {self._limit} seconds.")
         while True:
             try:
                 oldest = datetime.datetime.now() - datetime.timedelta(seconds=self._limit)

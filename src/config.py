@@ -7,6 +7,8 @@ See loadConfigs() help
 import os
 import re
 
+from util import asBool
+
 class Config:
     def __init__(self, source:str|dict|None):
         self._sub = None
@@ -35,11 +37,26 @@ class Config:
 
 
     def over(self, other:'Config|None') -> 'Config':
+        """ Use current configuration with precedence over the config supplied as argument.
+
+        Current config's values will be used, undefined keys will be deferred to `other` config.
+        """
         assert self._sub is None, f"Sub config is already set from {self._sub._path}"
 
         self._sub = other
 
         return self
+    
+
+    def under(self, other_data:dict) -> 'Config':
+        """ Use the data supplied in argument as a high precedence config,
+        with current config having lower precedence.
+
+        In the resulting config, `other_data`'s config values will be used, undefined keys will
+        be deferred to this original config.
+        """
+        cf = Config(other_data)
+        return cf.over(self)
     
 
     def get(self, k, default=None) -> str|None:
@@ -49,6 +66,16 @@ class Config:
         if v is None:
             v = default
         return v
+
+    def bool(self, k) -> bool:
+        return asBool(self.get(k, "false"))
+
+
+    def int(self, k) -> int:
+        v = self.get(k)
+        if v is None:
+            raise ValueError(f"Setting '{k}' is not populated.")
+        return int(v)
     
 
     def asDict(self) -> dict:

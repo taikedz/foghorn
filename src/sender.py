@@ -10,7 +10,7 @@ def send(send_ip, interval, broadcast, message):
         send_ip = CONFIG.get("SERVER_IP")
     assert send_ip, f"Server IP specified in neither arguments nor config."
 
-    send_addr = (send_ip, int(CONFIG.get("PORT")))
+    send_addr = (send_ip, CONFIG.int("PORT"))
     message = {"message": message, "host": socket.gethostname()}
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

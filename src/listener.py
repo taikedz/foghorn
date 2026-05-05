@@ -8,7 +8,7 @@ def listen(registry:registry.Registry, listen_ip, broadcast):
     if listen_ip is None or listen_ip == "all":
         listen_ip = "0.0.0.0"
 
-    bind_addr = (listen_ip, int(CONFIG.get("PORT")) )
+    bind_addr = (listen_ip, CONFIG.int("PORT") )
     print(f"Listening on {bind_addr}")
 
     ssock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
