@@ -28,9 +28,9 @@ def gen_handler_for(ipreg:registry.Registry):
 
 class EtcHostsServer(threading.Thread):
 
-    def __init__(self, ipreg:registry.Registry):
+    def __init__(self, ipreg:registry.Registry, addr, port):
         threading.Thread.__init__(self, daemon=True)
-        server = (CONFIG.get("BIND") or "", CONFIG.int("HTTP_PORT"))
+        server = (addr, port)
         print(f"Etc listening on {server}")
         self.httpd = HTTPServer(server, gen_handler_for(ipreg))
 

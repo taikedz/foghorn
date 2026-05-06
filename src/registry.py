@@ -3,6 +3,7 @@ import time
 import sqlite3
 import datetime
 import threading
+from typing import Callable
 
 from const import MINUTES
 
@@ -80,9 +81,28 @@ class Registry:
         """ Print all entries
         """
         res = self.select("SELECT seen,ip,hostname FROM Peers;")
-        print("\n".join(
-            list(set([f"{i} {h}   # {t}" for t,i,h in res]))
-            )
+        res = sort_rows(res, organise_on=2, sort_on=(0, datetime.datetime.fromisoformat) )
+        print("\n".join( [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res] )
+        )
+
+
+    def latest_pairs(self):
+        res = self.select("SELECT seen,ip,hostname FROM Peers;")
+        res = sort_rows(res, organise_on=2, sort_on=(0, datetime.datetime.fromisoformat) )
+
+        redux = {}
+        for d,i,h in res:
+            k=(i,h)
+            d = datetime.datetime.fromisoformat(d)
+            if not k in redux:
+                redux[k] = d
+            if d > redux[k]:
+                redux[k] = d
+
+        res = []
+        [res.append([d.isoformat(),k[0],k[1]]) for k,d in redux.items()]
+
+        print("\n".join( [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res] )
         )
 
 
@@ -104,6 +124,23 @@ class Registry:
         ips = self.get_hosts()
         for ip, hostlist in ips.items():
             print(f"{ip}  {' '.join(hostlist)}")
+
+
+def sort_rows(rows:list[list], organise_on:int, sort_on:tuple[int,Callable]) -> list[list]:
+    groupings:dict[str,list] = {}
+    for items in rows:
+        k = items[organise_on]
+        if groupings.get(k) is None:
+            groupings[k] = []
+        groupings[k].append(items[:])
+
+    end_list = []
+    sort_idx, sort_type = sort_on
+    for items_list in groupings.values():
+        items_list.sort(key=lambda item: sort_type(item[sort_idx]))
+        end_list.extend(items_list)
+
+    return end_list
 
 
 class Sweeper(threading.Thread):

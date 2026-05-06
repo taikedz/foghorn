@@ -67,11 +67,11 @@ class Config:
             v = default
         return v
 
-    def bool(self, k) -> bool:
+    def getBool(self, k) -> bool:
         return asBool(self.get(k, "false"))
 
 
-    def int(self, k) -> int:
+    def getInt(self, k, default=-1) -> int:
         v = self.get(k)
         if v is None:
             raise ValueError(f"Setting '{k}' is not populated.")
@@ -105,6 +105,7 @@ def loadConfigs(paths:list[str], defaults:dict|None = None) -> Config:
     for path in paths:
         path = os.path.expanduser(path)
         if os.path.exists(path):
+            print(f"Loading config from {path}")
             conf = Config(path).over(conf)
     return conf
 

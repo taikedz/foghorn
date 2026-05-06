@@ -4,11 +4,9 @@ import socket
 import registry
 from const import CONFIG
 
-def listen(registry:registry.Registry, listen_ip, broadcast):
-    if listen_ip is None or listen_ip == "all":
-        listen_ip = "0.0.0.0"
+def listen(registry:registry.Registry, listen_ip, listen_port, broadcast):
 
-    bind_addr = (listen_ip, CONFIG.int("PORT") )
+    bind_addr = (listen_ip, listen_port )
     print(f"Listening on {bind_addr}")
 
     ssock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
