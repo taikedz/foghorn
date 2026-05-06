@@ -28,8 +28,9 @@ def listen(registry:registry.Registry, listen_ip, listen_port, broadcast):
         data, endpoint = ssock.recvfrom(1024)
         address, _port = endpoint
         message = json.loads(data.decode('utf-8'))
-        entrystring = message['host']
-        if message.get('altname'):
-            entrystring += f"  # altname={message['altname']}" # Really, should have its own column
-        registry.register(entrystring, address)
-        log.info(f"{address.ljust(15)}    {message['host']}")
+
+        registry.register(message['host'], address)
+        if message.get("altname"):
+            registry.register(f"alt.{message['altname']}", address)
+
+        log.info(f"{address.ljust(15)}    {message['host']} alt={message['altname']}")
