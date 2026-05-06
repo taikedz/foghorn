@@ -5,18 +5,23 @@ import datetime
 import threading
 from typing import Callable
 
+from foglog import GetLog
+
 class Registry:
     # All instances will share this lock, this is intentional.
     #  It seems sqlite connections do _not_ multithread, so we
     #  need to prevent different registry instances from colliding.
     REGISTRY_LOCK = threading.RLock()
 
-    def __init__(self, dbfile):
+    def __init__(self, dbfile:str):
+        self.log = GetLog("registry")
+        self.log.info(f"Using database file {repr(dbfile)}")
         self._dbfile = dbfile
 
         exists = os.path.exists(self._dbfile)
 
         if not exists:
+            self.log.info("Creating new tables")
             self.execute("""
                 CREATE TABLE Peers (
                         id INTEGER PRIMARY KEY,
@@ -28,18 +33,18 @@ class Registry:
 
 
     def execute(self, command, holders=()):
-        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as NEW_CONN:
-            cursor = NEW_CONN.cursor()
+        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as dbconn:
+            cursor = dbconn.cursor()
             cursor.execute(command, holders)
-            NEW_CONN.commit()
+            dbconn.commit()
 
 
     def select(self, command, holders=()) -> list[list]:
-        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as NEW_CONN:
-            cursor = NEW_CONN.cursor()
+        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as dbconn:
+            cursor = dbconn.cursor()
             cursor.execute(command, holders)
             rows = cursor.fetchall()
-            NEW_CONN.commit()
+            dbconn.commit()
         return rows
 
 
@@ -57,7 +62,7 @@ class Registry:
         """
         peers = self.select("SELECT id,seen FROM Peers")
         rmpeers = {id:dt for id,dt in peers if datetime.datetime.fromisoformat(dt) < olderthan}
-        #print(f"Should remove {rmpeers}")
+        self.log.debug(f"Removing {len(rmpeers)} stale entries.")
         for id in rmpeers.keys():
             self.execute("DELETE FROM Peers WHERE id = ?;", (id, ))
 
@@ -150,7 +155,10 @@ class Sweeper(threading.Thread):
 
     def run(self):
         registry = Registry(self._dbfile)
+        self.log = GetLog("sweep")
+
         print(f"Sweeper running every {self._interval} seconds. Purge entries older than {self._limit} seconds.")
+
         while True:
             try:
                 oldest = datetime.datetime.now() - datetime.timedelta(seconds=self._limit)
@@ -159,4 +167,5 @@ class Sweeper(threading.Thread):
                 raise
             except Exception as e:
                 print(f"Error in sweeper: {e}")
+                self.log.error(f"Error in sweeper: {e}")
             time.sleep(self._interval)

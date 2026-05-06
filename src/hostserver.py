@@ -35,6 +35,8 @@ class EtcHostsServer(threading.Thread):
     def __init__(self, ipreg:registry.Registry, addr, port):
         threading.Thread.__init__(self, daemon=True)
         server = (addr, port)
+        # TODO - generate a random hash, print to stderr on-launch
+        #        require it as an access token to pass in query string
         print(f"Etc listening on {server}")
         self.httpd = HTTPServer(server, gen_handler_for(ipreg))
 
@@ -43,5 +45,7 @@ class EtcHostsServer(threading.Thread):
             # Fixme - writes its own log to stdout/stderr - need to capture
             self.httpd.serve_forever()
         except Exception as e:
-            print(f"-- EtcHostsServer err : {e}")
+            message = f"-- EtcHostsServer {type(e)} : {e}"
+            _LOG.error(message)
+            print(message)
             raise
