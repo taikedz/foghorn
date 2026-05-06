@@ -13,7 +13,6 @@ import time
 
 from const import MINUTES, CONFIG
 from foglog import GetLog, InitLogFile
-from hostserver import EtcHostsServer
 import listener
 import registry
 import sender
@@ -112,6 +111,8 @@ def main():
                     sw.start()
 
                 if asBool(args.etc_hosts_server):
+                    # Import now, after logging has been configured
+                    from hostserver import EtcHostsServer
                     hs = EtcHostsServer(reg, args.bind, args.http_port)
                     hs.start()
 

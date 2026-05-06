@@ -3,9 +3,11 @@ import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import threading
 
+from foglog import GetLog
 import registry
-from const import CONFIG
 
+
+_LOG = GetLog("etc-serv")
 
 def gen_handler_for(ipreg:registry.Registry):
     class RequestHandlerWithRegistry(BaseHTTPRequestHandler):
@@ -16,6 +18,8 @@ def gen_handler_for(ipreg:registry.Registry):
                 [f"{ip.ljust(15)}    {' '.join(hostlist)}" for ip, hostlist in self.REGISTRY.get_hosts().items()]
             )
             hosts_data = f"# {datetime.datetime.now().isoformat()}\n\n{hosts_data}\n"
+
+            _LOG.info(f"Request from {self.client_address[0]} : {self.path}")
 
             self.protocol_version = "HTTP/1.1"
             self.send_response(200)
@@ -36,7 +40,7 @@ class EtcHostsServer(threading.Thread):
 
     def run(self):
         try:
-            # FIxme - writes its own log to stdout/stderr - need to capture
+            # Fixme - writes its own log to stdout/stderr - need to capture
             self.httpd.serve_forever()
         except Exception as e:
             print(f"-- EtcHostsServer err : {e}")
