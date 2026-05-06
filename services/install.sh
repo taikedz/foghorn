@@ -15,7 +15,7 @@ fail() {
 add_config() {
     mkdir -p /etc/foghorn
     if [[ ! -f /etc/foghorn/config.env ]]; then
-        cp "$HEREDIR/config.env" /etc/foghorn
+        cp "$HEREDIR/config.env.example" /etc/foghorn/config.env
     fi
 }
 
