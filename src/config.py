@@ -6,6 +6,7 @@ See loadConfigs() help
 
 import os
 import re
+import sys
 
 from util import asBool
 
@@ -105,7 +106,7 @@ def loadConfigs(paths:list[str], defaults:dict|None = None) -> Config:
     for path in paths:
         path = os.path.expanduser(path)
         if os.path.exists(path):
-            print(f"Loading config from {path}")
+            print(f"Loading config from {path}", file=sys.stderr)
             conf = Config(path).over(conf)
     return conf
 

@@ -93,6 +93,11 @@ def main():
         try:
             if args.action == "dump-config":
                 print(CONFIG.asDict())
+                return
+
+            elif args.action == "query":
+                do_query(reg, args)
+                return
 
             elif args.action == "listen":
 
@@ -108,10 +113,6 @@ def main():
 
             elif args.action == "send":
                 sender.send(args.ip, args.port, args.interval, args.broadcast, args.message)
-
-            elif args.action == "query":
-                do_query(reg, args)
-                return
 
             else:
                 print(f"Unknown action {repr(args.action)} . Run with '--help'")
@@ -131,7 +132,7 @@ def main():
         except Exception as e:
             print(f"ERROR : {type(e)}:{e}")
             print("Starting again....\n=========")
-            time.sleep(0.5)
+            time.sleep(0.5) # If there's an irremediable error, loop slowly ...
 
 
 if __name__ == "__main__":
