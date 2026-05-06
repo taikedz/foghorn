@@ -2,8 +2,6 @@ import time
 import json
 import socket
 
-from const import CONFIG
-
 
 def send(send_ip, send_port, interval, broadcast, message):
     send_addr = (send_ip, send_port)

@@ -2,7 +2,6 @@ import json
 import socket
 
 import registry
-from const import CONFIG
 
 def listen(registry:registry.Registry, listen_ip, listen_port, broadcast):
 
