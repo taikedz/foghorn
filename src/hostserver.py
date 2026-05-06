@@ -36,6 +36,7 @@ class EtcHostsServer(threading.Thread):
 
     def run(self):
         try:
+            # FIxme - writes its own log to stdout/stderr - need to capture
             self.httpd.serve_forever()
         except Exception as e:
             print(f"-- EtcHostsServer err : {e}")

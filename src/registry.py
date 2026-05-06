@@ -5,8 +5,6 @@ import datetime
 import threading
 from typing import Callable
 
-from const import MINUTES
-
 class Registry:
     # All instances will share this lock, this is intentional.
     #  It seems sqlite connections do _not_ multithread, so we

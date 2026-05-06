@@ -1,9 +1,12 @@
 import json
 import socket
 
+from foglog import GetLog
 import registry
 
 def listen(registry:registry.Registry, listen_ip, listen_port, broadcast):
+
+    log = GetLog("listener")
 
     bind_addr = (listen_ip, listen_port )
     print(f"Listening on {bind_addr}")
@@ -20,4 +23,4 @@ def listen(registry:registry.Registry, listen_ip, listen_port, broadcast):
         address, _port = endpoint
         message = json.loads(data.decode('utf-8'))
         registry.register(message['host'], address)
-        #print(f"{address}    {message['host']}")  #  replace with writing to a log
+        log.info(f"{address.ljust(15)}    {message['host']}")

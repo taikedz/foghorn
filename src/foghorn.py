@@ -12,6 +12,7 @@ import sqlite3
 import time
 
 from const import MINUTES, CONFIG
+from foglog import GetLog, InitLogFile
 from hostserver import EtcHostsServer
 import listener
 import registry
@@ -22,7 +23,7 @@ from util import asBool
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--log", default=None) # NOT IMPLEMENTED
+    parser.add_argument("--log", default=CONFIG.get("LOG"))
     parser.add_argument("--database", "-D", default=CONFIG.get("DATABASE"))
 
     subs = parser.add_subparsers(dest="action", required=True)
@@ -86,6 +87,11 @@ def do_query(reg:registry.Registry, args:argparse.Namespace):
 
 def main():
     args = parse_args()
+
+    # Initialize now, before other modules get involved
+    if args.log:
+        InitLogFile(args.log)
+    log = GetLog("foghorn")
 
     reg = registry.Registry(args.database)
 
