@@ -16,6 +16,7 @@ add_config() {
     mkdir -p /etc/foghorn
     if [[ ! -f /etc/foghorn/config.env ]]; then
         cp "$HEREDIR/config.env.example" /etc/foghorn/config.env
+        sed -r -e "s|SERVER_IP=.*|SERVER_IP=${1:-127.0.0.1}|" -i /etc/foghorn/config.env
     fi
 }
 
@@ -27,7 +28,7 @@ main() {
 
     service_base_path=/etc/systemd/system/foghorn
 
-    action="$1"; shift || fail 1 "No action specified - try 'listener' or 'sender'"
+    action="${1:-}"; shift || fail 1 "No action specified - try 'listener' or 'sender'"
 
     mkdir -p /var/log/foghorn
     mkdir -p /var/foghorn
@@ -40,6 +41,7 @@ main() {
     sender|client)
         MODE=client
         ACTION=send
+        IP="${1:-}"; shift || fail 1 "Specify the IP of the listener server."
         ;;
     *)
         fail 2 "Unknown action '$action'"
@@ -54,10 +56,11 @@ main() {
 
     systemctl daemon-reload
     systemctl enable "foghorn-$MODE"
+    systemctl start "foghorn-$MODE"
 
-    echo "Foghorn $MODE service installed."
-    echo -e "\033[32;1mConfigure\033[0m via /etc/foghorn/config.env"
-    echo "Start via 'systemctl start foghorn-$MODE'"
+    echo "Foghorn $MODE installed and started. Change configs at /etc/foghorn/config.env"
+    echo ""
 }
+
 
 main "$@"
