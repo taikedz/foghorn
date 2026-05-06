@@ -6,6 +6,8 @@ For when you're not IT and you need a poor-sod's host discovery.
 
 A troubleshooting tool, put it on all machines, and find misconfigured IPs and hostnames.
 
+There is no TLS or authentication. NOT FOR USE ON THE INTERNET OR UNTRUSTED NETWORKS.
+
 ## Quick Start
 
 If you want to quickly serve:
