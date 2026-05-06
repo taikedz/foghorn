@@ -45,7 +45,7 @@ def parse_args():
     send_p = subs.add_parser("send")
     send_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
     send_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int)
-    send_p.add_argument("--message", "-M", default="CLACK")
+    send_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"))
     send_p.add_argument("--broadcast", "-B", action="store_true")
     send_p.add_argument("--interval", "-n", default=10 * MINUTES, type=int)
 
@@ -119,7 +119,7 @@ def main():
                 listener.listen(reg, args.bind, args.port, args.broadcast)
 
             elif args.action == "send":
-                sender.send(args.ip, args.port, args.interval, args.broadcast, args.message)
+                sender.send(args.ip, args.port, args.interval, args.broadcast, args.altname)
 
             else:
                 print(f"Unknown action {repr(args.action)} . Run with '--help'")

@@ -3,9 +3,9 @@ import json
 import socket
 
 
-def send(send_ip, send_port, interval, broadcast, message):
+def send(send_ip, send_port, interval, broadcast, altname):
     send_addr = (send_ip, send_port)
-    message = {"message": message, "host": socket.gethostname()}
+    message = {"altname": altname, "host": socket.gethostname()}
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     if broadcast:
