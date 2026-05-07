@@ -110,10 +110,10 @@ def main():
                     sw = registry.Sweeper(args.database, args.sweep_interval, args.age_limit)
                     sw.start()
 
-                if asBool(args.etc_hosts_server):
+                if not args.etc_hosts_server is None:
                     # Import now, after logging has been configured
                     from hostserver import EtcHostsServer
-                    hs = EtcHostsServer(reg, args.bind, args.http_port)
+                    hs = EtcHostsServer(reg, args.bind, args.etc_hosts_server)
                     hs.start()
 
                 listener.listen(reg, args.bind, args.port, args.broadcast)

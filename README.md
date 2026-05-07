@@ -26,14 +26,27 @@ If you want to quickly set up a client beacon to talk to a server:
 sudo services/install.sh client 192.168.19.5
 ```
 
-(If you do not have `sudo` access on the machines, directly run `python3 src/foghorn.py --help` for how to run it manually)
+If your client host has a mandatory generic hostname but you want it to broadcast a more suited name, set `ALTNAME=` in the `/etc/foghorn/config.env` file
 
-To find out what the listener has seen:
+> (If you do not have `sudo` access on the machines, directly run `python3 src/foghorn.py --help` for how to run it manually, and use a `./foghorn-config.env` file - copy the example from from `services/`)
+
+### Query
+
+If the listener has been started with an outward-facing HTTP server (use `ETC_HOSTS_SERVER=<ip>` (replacing with your actual IP) or `--etc-hosts-server`):
 
 ```sh
 # Replace the IP with the one of the listener server
-curl http://192.168.19.5:35080/
+curl "http://<ip>:35080/"
 ```
+
+If the listener's etc-hosts server was started with a localhost IP, you will need to access the server and run
+
+```sh
+# Replace the IP with the one of the listener server
+curl http://localhost:35080/
+```
+
+Otherwise, SSH to the server, and run `foghorn.py query --latest`. The database it selects will depend on config, or run `foghorn.py --database /path/to/db/file query --latest`
 
 
 # Details

@@ -6,7 +6,7 @@ defvals = {
     "DATABASE": "peers.sqlite",
     "HTTP_PORT": 35080,
     "SWEEP": "false",
-    "ETC_HOSTS_SERVER": "false",
+    "ETC_HOSTS_SERVER": None,
     "LOG": "foghorn.log",
 }
 
