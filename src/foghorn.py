@@ -35,9 +35,8 @@ def parse_args():
     listen_p.add_argument("--broadcast", "-B", action="store_true")
     listen_p.add_argument("--sweep", "-W", choices=["true", "false"], default=CONFIG.get("SWEEP"))
     listen_p.add_argument("--etc-hosts-server", "-E",
-                          choices=["true", "false"],
                           default=CONFIG.get("ETC_HOSTS_SERVER"),
-                          help="Expose a HTTP endpoint to dump /etc/hosts compatible summary via curl/GET")
+                          help="Expose a HTTP endpoint bound on this IP, to dump /etc/hosts compatible summary via curl/GET")
     listen_p.add_argument("--http-port", "-P", default=CONFIG.getInt("HTTP_PORT"), type=int)
     listen_p.add_argument("--sweep-interval", "-N", type=int, default=30 * MINUTES, help="How frequently to sweep the database entries (seconds)")
     listen_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
@@ -113,7 +112,7 @@ def main():
                 if not args.etc_hosts_server is None:
                     # Import now, after logging has been configured
                     from hostserver import EtcHostsServer
-                    hs = EtcHostsServer(reg, args.bind, args.etc_hosts_server)
+                    hs = EtcHostsServer(reg, args.etc_hosts_server, args.http_port)
                     hs.start()
 
                 listener.listen(reg, args.bind, args.port, args.broadcast)

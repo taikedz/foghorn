@@ -36,15 +36,10 @@ If the listener has been started with an outward-facing HTTP server (use `ETC_HO
 
 ```sh
 # Replace the IP with the one of the listener server
-curl "http://<ip>:35080/"
+curl "http://<ip>:35080/?token=<token>"
 ```
 
-If the listener's etc-hosts server was started with a localhost IP, you will need to access the server and run
-
-```sh
-# Replace the IP with the one of the listener server
-curl http://localhost:35080/
-```
+The owner of the server will be able to give you the token.
 
 Otherwise, SSH to the server, and run `foghorn.py query --latest`. The database it selects will depend on config, or run `foghorn.py --database /path/to/db/file query --latest`
 
