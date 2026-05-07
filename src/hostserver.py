@@ -25,7 +25,6 @@ def gen_handler_for(ipreg:registry.Registry, access_token:str):
                 return
             elif not token_values or token_values[0] != self.TOKEN:
                 self._write_response(403, "Wrong.\n")
-                print(f"Got {repr(token_values[0])} instead of {repr(self.TOKEN)}")
                 return
 
             hosts_data = "\r\n".join(
