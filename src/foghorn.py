@@ -22,31 +22,31 @@ from util import asBool
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--log", default=CONFIG.get("LOG"))
-    parser.add_argument("--database", "-D", default=CONFIG.get("DATABASE"))
+    parser.add_argument("--log", default=CONFIG.get("LOG"), help="Log file path")
+    parser.add_argument("--database", "-D", default=CONFIG.get("DATABASE"), help="Database file for saving/reading entries")
 
     subs = parser.add_subparsers(dest="action", required=True)
 
     listen_p = subs.add_parser("dump-config")
 
     listen_p = subs.add_parser("listen")
-    listen_p.add_argument("--bind", default=CONFIG.get("BIND", "0.0.0.0"))
-    listen_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int)
-    listen_p.add_argument("--broadcast", "-B", action="store_true")
-    listen_p.add_argument("--sweep", "-W", choices=["true", "false"], default=CONFIG.get("SWEEP"))
+    listen_p.add_argument("--bind", default=CONFIG.get("BIND", "0.0.0.0"), help="Address for listener to bind to")
+    listen_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port foe listener to listen on")
+    listen_p.add_argument("--broadcast", "-B", action="store_true", help="Whether to expect broadcast packets")
+    listen_p.add_argument("--sweep", "-W", choices=["true", "false"], default=CONFIG.get("SWEEP"), help="Whether to remove old entries")
     listen_p.add_argument("--etc-hosts-server", "-E",
                           default=CONFIG.get("ETC_HOSTS_SERVER"),
-                          help="Expose a HTTP endpoint bound on this IP, to dump /etc/hosts compatible summary via curl/GET")
-    listen_p.add_argument("--http-port", "-P", default=CONFIG.getInt("HTTP_PORT"), type=int)
+                          help="Expose a HTTP endpoint bound on this IP, to dump /etc/hosts compatible summary via curl/GET. Set empty to deactivate.")
+    listen_p.add_argument("--http-port", "-P", default=CONFIG.getInt("HTTP_PORT"), type=int, help="Port for HTTP endpoint")
     listen_p.add_argument("--sweep-interval", "-N", type=int, default=30 * MINUTES, help="How frequently to sweep the database entries (seconds)")
     listen_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
 
     send_p = subs.add_parser("send")
     send_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
     send_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int)
-    send_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"))
-    send_p.add_argument("--broadcast", "-B", action="store_true")
-    send_p.add_argument("--interval", "-n", default=10 * MINUTES, type=int)
+    send_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
+    send_p.add_argument("--broadcast", "-B", action="store_true", help="Send using broadcast mode (requires supplied IP to be a network CIDR spec)")
+    send_p.add_argument("--interval", "-n", default=10 * MINUTES, type=int, help="Interval in seconds, how frequently to ping server")
 
     query_p = subs.add_parser("query", help="Query local database file")
     query_p.add_argument("--host", "-H", default=None, help="Hostname to get the IP of")

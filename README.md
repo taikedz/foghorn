@@ -10,7 +10,7 @@ There is no TLS or authentication. NOT FOR USE ON THE INTERNET OR UNTRUSTED NETW
 
 ## Quick Start
 
-If you want to quickly serve:
+### Server
 
 ```sh
 # Create a defaul foghorn listener
@@ -19,7 +19,9 @@ sudo services/install.sh server
 
 A server will start, with default configurations. See `/etc/foghorn/config.env`
 
-If you want to quickly set up a client beacon to talk to a server:
+### Client
+
+#### You have sudo access - install daemon
 
 ```sh
 # Use the IP of the server where you set up a foghorn listener.
@@ -28,11 +30,19 @@ sudo services/install.sh client 192.168.19.5
 
 If your client host has a mandatory generic hostname but you want it to broadcast a more suited name, set `ALTNAME=` in the `/etc/foghorn/config.env` file
 
-> (If you do not have `sudo` access on the machines, directly run `python3 src/foghorn.py --help` for how to run it manually, and use a `./foghorn-config.env` file - copy the example from from `services/`)
+#### You do not have sudo access - run from CLI
+
+```sh
+# Use the IP of the server where you set up a foghorn listener.
+# You can optionally include `--altname myserver` to report an alternative name for your machine,
+#   the registry will show it as an entry titled `alt.myserver`
+python3 src/foghorn.py 192.168.19.5 --altname myserver
+```
+
 
 ### Query
 
-If the listener has been started with an outward-facing HTTP server (use `ETC_HOSTS_SERVER=<ip>` (replacing with your actual IP) or `--etc-hosts-server`):
+If the listener has been started with an outward-facing HTTP server (use configuration `ETC_HOSTS_SERVER=<ip>` (replacing with your actual IP) or `--etc-hosts-server`) , you can use curl to ask for a dump of entries:
 
 ```sh
 # Replace the IP with the one of the listener server
@@ -41,20 +51,28 @@ curl "http://<ip>:35080/?token=<token>"
 
 The owner of the server will be able to give you the token.
 
-Otherwise, SSH to the server, and run `foghorn.py query --latest`. The database it selects will depend on config, or run `foghorn.py --database /path/to/db/file query --latest`
+Otherwise, SSH to the server, and run `foghorn.py --database /path/to/db/file query --latest`.
 
 
 # Details
 
 ## Send and listen
 
+**Listener**
+
 Run `foghorn.py listen` to listen for any packets from a foghorn sender.
+
+When run with `--sweep true`, foghorn cleans up old entries in the peers database older than a given amount of time - default 30 minutes.
+
+When `--etc-hosts-server 0.0.0.0` is supplied, a HTTP endpoint is enabled to return an `/etc/hosts` compatible listing of all hosts that have reported in. It _requires_ a token to be supplied in arguments, e.g. `curl http://<ip>/?token=<token>` . The token is renewed at each launch of the listener and stored to a file. See your config's `TOKEN_FILE` setting to determine the path.
+
+**Client**
 
 Run `foghorn.py send 192.168.3.15` to send packets to a server listening at the specified IP.
 
-Run `foghorn.py send -B 192.168.3.255` to broadcast on the `192.168.3.0/24` subnetwork such that all listeners will receive. Note that some organisations block chatter on broadcast addresses.
+Run `foghorn.py send 192.168.3.15 --interval 300` to send packets to a server listening at the specified IP every 300 seconds (which is 5 minutes).
 
-Automatically cleans up old entries in the peers database older than a given amount of time - default 30 minutes.
+Run `foghorn.py send -B 192.168.3.255` to broadcast on the `192.168.3.0/24` subnetwork such that all listeners will receive. Note that some organisations block chatter on broadcast addresses.
 
 ## Query
 

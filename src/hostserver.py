@@ -53,15 +53,14 @@ class EtcHostsServer(threading.Thread):
     def __init__(self, ipreg:registry.Registry, addr, port):
         threading.Thread.__init__(self, daemon=True)
         server = (addr, port)
-        # TODO - generate a random hash, print to stderr on-launch
-        #        require it as an access token to pass in query string
+        print(f"Etc listening on {server}")
 
         access_token = hashlib.sha1(datetime.datetime.now().isoformat().encode("utf-8")).hexdigest()[:10]
-        with open(CONFIG.get("TOKEN_FILE") or "./access-token.txt", "w") as fh:
+        token_location = CONFIG.get("TOKEN_FILE") or "./access-token.txt"
+        with open(token_location, "w") as fh:
             fh.write(f"{access_token}\n")
+            print(f"Access token {repr(access_token)} saved to {token_location}")
 
-        print(f"Etc listening on {server}")
-        print(f"Access token = {access_token}")
         self.httpd = HTTPServer(server, gen_handler_for(ipreg, access_token))
 
     def run(self):
