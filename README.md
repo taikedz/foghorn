@@ -56,7 +56,7 @@ Otherwise, SSH to the server, and run `foghorn.py --database /path/to/db/file qu
 
 ## Send and listen
 
-**Listener**
+**Listener** (server)
 
 Run `foghorn.py listen` to listen for any packets from a foghorn sender.
 
@@ -64,7 +64,7 @@ When run with `--sweep true`, foghorn cleans up old entries in the peers databas
 
 When `--etc-hosts-server 0.0.0.0` is supplied, a HTTP endpoint is enabled to return an `/etc/hosts` compatible listing of all hosts that have reported in. It _requires_ a token to be supplied in arguments, e.g. `curl http://<ip>/?token=<token>` . The token is renewed at each launch of the listener and stored to a file. See your config's `TOKEN_FILE` setting to determine the path.
 
-**Client**
+**Sender** (client)
 
 Run `foghorn.py send 192.168.3.15` to send packets to a server listening at the specified IP.
 
