@@ -52,7 +52,7 @@ main() {
         sed -e "s/%MODE%/$MODE/" -e "s|%COMMAND%|python3 $PARENTDIR/src/foghorn.py --log /var/log/foghorn/foghorn-$MODE.log $ACTION|"
     ) < "$HEREDIR/foghorn.service" > "${service_base_path}-$MODE.service"
 
-    add_config "$IP"
+    add_config "${IP:-}"
 
     systemctl daemon-reload
     systemctl enable "foghorn-$MODE"
