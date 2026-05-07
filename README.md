@@ -39,20 +39,18 @@ If your client host has a mandatory generic hostname but you want it to broadcas
 python3 src/foghorn.py 192.168.19.5 --altname myserver
 ```
 
-
 ### Query
 
 If the listener has been started with an outward-facing HTTP server (use configuration `ETC_HOSTS_SERVER=<ip>` (replacing with your actual IP) or `--etc-hosts-server`) , you can use curl to ask for a dump of entries:
+
+Ask the server owner for the required access token:
 
 ```sh
 # Replace the IP with the one of the listener server
 curl "http://<ip>:35080/?token=<token>"
 ```
 
-The owner of the server will be able to give you the token.
-
 Otherwise, SSH to the server, and run `foghorn.py --database /path/to/db/file query --latest`.
-
 
 # Details
 
@@ -73,6 +71,8 @@ Run `foghorn.py send 192.168.3.15` to send packets to a server listening at the 
 Run `foghorn.py send 192.168.3.15 --interval 300` to send packets to a server listening at the specified IP every 300 seconds (which is 5 minutes).
 
 Run `foghorn.py send -B 192.168.3.255` to broadcast on the `192.168.3.0/24` subnetwork such that all listeners will receive. Note that some organisations block chatter on broadcast addresses.
+
+Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `foghorn.py send 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `alt.chat-server`, which will be returned in queries.
 
 ## Query
 
