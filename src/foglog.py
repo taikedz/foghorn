@@ -36,8 +36,11 @@ class SimpleLogger(logging.Logger):
 
 def GetLog(name):
     assert _LOGFILE, "Log file not set."
-    if not name in LOGS:
-        LOGS[name] = SimpleLogger(name=name, level=SimpleLogger.INFO, console=False, files=[_LOGFILE])
+    try:
+        if not name in LOGS:
+            LOGS[name] = SimpleLogger(name=name, level=SimpleLogger.INFO, console=False, files=[_LOGFILE])
+    except PermissionError as e:
+        LOGS[name] = SimpleLogger(name=name, level=SimpleLogger.WARN, console=True, files=[])
     return LOGS[name]
 
 
