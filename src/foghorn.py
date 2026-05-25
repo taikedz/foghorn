@@ -127,7 +127,7 @@ def main():
         except KeyboardInterrupt: # sigint
             print("\nKTHXBAI")
             return
-        except AssertionError as e:
+        except (AssertionError, OSError) as e:
             print(e)
             exit(1)
         except (ValueError, AssertionError, KeyError, AttributeError):
