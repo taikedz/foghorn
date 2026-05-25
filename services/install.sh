@@ -21,44 +21,29 @@ add_config() {
 }
 
 main() {
+    IP="${1:-}"; shift || fail 1 "Specify the network target e.g. '192.168.1.0/24'"
+
     if [[ "$UID" != 0 ]]; then
         echo "You must be root to run this script"
         exit 1
     fi
 
-    service_base_path=/etc/systemd/system/foghorn
-
-    action="${1:-}"; shift || fail 1 "No action specified - try 'listener' or 'sender'"
+    service_file=/etc/systemd/system/foghorn.service
 
     mkdir -p /var/log/foghorn
     mkdir -p /var/foghorn
 
-    case "$action" in
-    listener|server)
-        MODE=server
-        ACTION=listen
-        ;;
-    sender|client)
-        MODE=client
-        ACTION=send
-        IP="${1:-}"; shift || fail 1 "Specify the IP of the listener server."
-        ;;
-    *)
-        fail 2 "Unknown action '$action'"
-        ;;
-    esac
-
     (
-        sed -e "s/%MODE%/$MODE/" -e "s|%COMMAND%|python3 $PARENTDIR/src/foghorn.py --log /var/log/foghorn/foghorn-$MODE.log $ACTION|"
-    ) < "$HEREDIR/foghorn.service" > "${service_base_path}-$MODE.service"
+        sed -e "s|%COMMAND%|python3 $PARENTDIR/src/foghorn.py --log /var/log/foghorn/foghorn.log run|"
+    ) < "$HEREDIR/foghorn.service" > "$service_file"
 
     add_config "${IP:-}"
 
     systemctl daemon-reload
-    systemctl enable "foghorn-$MODE"
-    systemctl start "foghorn-$MODE"
+    systemctl enable foghorn
+    systemctl start foghorn
 
-    echo "Foghorn $MODE installed and started. Change configs at /etc/foghorn/config.env"
+    echo "Foghorn installed and started. Change configs at /etc/foghorn/config.env"
     echo ""
 }
 

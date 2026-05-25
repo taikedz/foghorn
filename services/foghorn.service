@@ -1,5 +1,5 @@
 [Unit]
-Description=Foghorn %MODE%
+Description=Foghorn
 After=network.target
 # TODO - add a stdout/stderr log redirect
 
