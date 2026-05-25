@@ -10,69 +10,64 @@ There is no TLS or authentication. NOT FOR USE ON THE INTERNET OR UNTRUSTED NETW
 
 ## Quick Start
 
-### Server
+### With sudo access
 
 ```sh
-# Create a defaul foghorn listener
-sudo services/install.sh server
+# Create a default foghorn service which will ping the full subnetwork specified every 5 minutes
+sudo services/install.sh 192.168.42.0/24
 ```
 
-A server will start, with default configurations. See `/etc/foghorn/config.env`
+A server will start listening, with default configurations. It will also periodically send out a ping every 5 minutes to each individual address on the specified subnet.
 
-### Client
+Instead of a subnet, you can also specify a single IP.
 
-#### You have sudo access - install daemon
+See `/etc/foghorn/config.env` for further options. After adjusting configurations, run `sudo systemctl restart foghorn`
 
-```sh
-# Use the IP of the server where you set up a foghorn listener.
-sudo services/install.sh client 192.168.19.5
-```
+### Sudo-less
 
-If your client host has a mandatory generic hostname but you want it to broadcast a more suited name, set `ALTNAME=` in the `/etc/foghorn/config.env` file
-
-#### You do not have sudo access - run from CLI
+If you do not have sudo on your machine, you can simply run foghon as a regular user process
 
 ```sh
-# Use the IP of the server where you set up a foghorn listener.
 # You can optionally include `--altname myserver` to report an alternative name for your machine,
 #   the registry will show it as an entry titled `alt.myserver`
-python3 src/foghorn.py 192.168.19.5 --altname myserver
+python3 src/foghorn.py 192.168.42.0/24 --altname myserver
 ```
 
 ### Query
 
-If the listener has been started with an outward-facing HTTP server (use configuration `ETC_HOSTS_SERVER=<ip>` (replacing with your actual IP) or `--etc-hosts-server`) , you can use curl to ask for a dump of entries:
+Any machine running foghorn can query its local database. It is recommended to run each client such that it pings a specified subnetwork, so that all machines involved can mutually discover.
 
-Ask the server owner for the required access token:
+To query your instance's registry run `foghorn.py [--database </path/to/db/file>] query --hosts`
 
-```sh
-# Replace the IP with the one of the listener server
-curl "http://<ip>:35080/?token=<token>"
-```
+This will dump the peers that have reported in along with their altnames, in a hosts-file compatible notaiton.
 
-Otherwise, SSH to the server, and run `foghorn.py --database /path/to/db/file query --latest`.
+So long as the database is set in `/etc/foghorn/config.env`, you may omit the `--database DATABASE` option, as the running service honours the global config.
 
 # Details
 
 ## Send and listen
 
+Foghorn implements a sender process, and a listener process
+
 **Listener** (server)
 
-Run `foghorn.py listen` to listen for any packets from a foghorn sender.
+Listener listens on the specified bin addres (defaulting to 0.0.0.0 which listens on all interfaces).
 
-When run with `--sweep true`, foghorn cleans up old entries in the peers database older than a given amount of time - default 30 minutes.
+When run with `--sweep true`, foghorn cleans up old entries in the peers database older than a given amount of time - default 30 minutes, specifed by `--sweep-interval`.
 
-When `--etc-hosts-server 0.0.0.0` is supplied, a HTTP endpoint is enabled to return an `/etc/hosts` compatible listing of all hosts that have reported in. It _requires_ a token to be supplied in arguments, e.g. `curl http://<ip>/?token=<token>` . The token is renewed at each launch of the listener and stored to a file. See your config's `TOKEN_FILE` setting to determine the path.
 
 **Sender** (client)
 
-Run `foghorn.py send 192.168.3.15` to send packets to a server listening at the specified IP.
+The IP/network specified tells the sender component where to send pings to. It can either be a single IP, or a subnet specifed by CIDR notation
 
-Run `foghorn.py send 192.168.3.15 --interval 300` to send packets to a server listening at the specified IP every 300 seconds (which is 5 minutes).
+Other arguments supplied control additional aspects
 
-Run `foghorn.py send -B 192.168.3.255` to broadcast on the `192.168.3.0/24` subnetwork such that all listeners will receive. Note that some organisations block chatter on broadcast addresses.
+Args examples
 
-Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `foghorn.py send 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `alt.chat-server`, which will be returned in queries.
+* `192.168.3.15` to send packets to a host listening at the specified IP.
+* `192.168.3.0/24 --interval 300` to send packets to all hosts in the specified range, every 300 seconds (which is 5 minutes).
+
+Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `foghorn.py 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `alt.chat-server`, which will be returned in queries.
 
 ## Query
 
@@ -82,7 +77,7 @@ Query the history of machines that have been reporting in for a given database:
 * for an IP, see all the names that claim to have that IP : `foghorn.py --database path/to/database.db query --ip 192.168.3.3`
 * show everything : `foghorn.py --database path/to/database.db query --dump`
 
-You can set `DATABASE=` in a local `./foghorn-config.env` to avoid including the long path every time.
+You can set `DATABASE=` in a local `./foghorn-config.env` to avoid including the long path every time, or set it globally in `/etc/foghorn/config.env`
 
 ## Configs
 
@@ -92,12 +87,14 @@ See `services/config.env.example`
 
 ## Service
 
-Run `bash services/install.sh { server | client <ip> }` to install either of a client (sender) or a server (listener).
+Run `bash services/install.sh <ip>` to install foghorn as a service in systemd.
 
-These can then be further configured at `/etc/foghorn/config.env`. If you change configurations, you need to `sudo systemctl restart foghorn-client` or `foghorn-server` as appropriate.
+This can then be further configured at `/etc/foghorn/config.env`. If you change configurations, you need to `sudo systemctl restart foghorn`
 
 # License
 
 Foghorn is covered by the LGPLv3 license, (C) Tai Kedzierski
 
 You may include it in proprietary solutions.
+
+But you really should not. It is not fit for customer production use. **It is an internal ops tool**.
