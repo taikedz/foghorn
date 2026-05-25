@@ -1,0 +1,32 @@
+networks:
+  fog:
+    ipam:
+      driver: default
+      config:
+      - subnet: 192.168.42.0/24
+
+services:
+  fog-serv:
+    image: foghorn:latest
+    volumes:
+    - ../:/hostdata
+    command: python3 /hostdata/src/foghorn.py listen --bind 0.0.0.0
+    networks:
+    - fog
+
+  fog1:
+    image: foghorn:latest
+    volumes:
+    - ../:/hostdata
+    command: python3 /hostdata/src/foghorn.py send 192.168.42.252/30
+    networks:
+    - fog
+
+  fog2:
+    image: foghorn:latest
+    volumes:
+    - ../:/hostdata
+    command: python3 /hostdata/src/foghorn.py send 192.168.42.252/30
+    networks:
+    - fog
+
