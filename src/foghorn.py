@@ -27,26 +27,20 @@ def parse_args():
 
     subs = parser.add_subparsers(dest="action", required=True)
 
-    listen_p = subs.add_parser("dump-config")
+    dump_p = subs.add_parser("dump-config")
 
-    listen_p = subs.add_parser("listen")
-    listen_p.add_argument("--bind", default=CONFIG.get("BIND", "0.0.0.0"), help="Address for listener to bind to")
-    listen_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port foe listener to listen on")
-    listen_p.add_argument("--broadcast", "-B", action="store_true", help="Whether to expect broadcast packets")
-    listen_p.add_argument("--sweep", "-W", choices=["true", "false"], default=CONFIG.get("SWEEP"), help="Whether to remove old entries")
-    listen_p.add_argument("--etc-hosts-server", "-E",
-                          default=CONFIG.get("ETC_HOSTS_SERVER"),
-                          help="Expose a HTTP endpoint bound on this IP, to dump /etc/hosts compatible summary via curl/GET. Set empty to deactivate.")
-    listen_p.add_argument("--http-port", "-P", default=CONFIG.getInt("HTTP_PORT"), type=int, help="Port for HTTP endpoint")
-    listen_p.add_argument("--sweep-interval", "-N", type=int, default=30 * MINUTES, help="How frequently to sweep the database entries (seconds)")
-    listen_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
+    run_p = subs.add_parser("run")
+    run_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
 
-    send_p = subs.add_parser("send")
-    send_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
-    send_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int)
-    send_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
-    send_p.add_argument("--broadcast", "-B", action="store_true", help="Send using broadcast mode (requires supplied IP to be a network CIDR spec)")
-    send_p.add_argument("--interval", "-n", default=10 * MINUTES, type=int, help="Interval in seconds, how frequently to ping server")
+    run_p.add_argument("--bind", default=CONFIG.get("BIND", "0.0.0.0"), help="Address for listener to bind to")
+    run_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port foe listener to listen on")
+    run_p.add_argument("--sweep", "-W", choices=["true", "false"], default=CONFIG.get("SWEEP"), help="Whether to remove old entries")
+    run_p.add_argument("--sweep-interval", "-N", type=int, default=30 * MINUTES, help="How frequently to sweep the database entries (seconds)")
+    run_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
+
+    run_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
+    run_p.add_argument("--broadcast", "-B", action="store_true", help="Send using broadcast mode (requires supplied IP to be a network CIDR spec)")
+    run_p.add_argument("--interval", "-n", default=10 * MINUTES, type=int, help="Interval in seconds, how frequently to ping server")
 
     query_p = subs.add_parser("query", help="Query local database file")
     query_p.add_argument("--host", "-H", default=None, help="Hostname to get the IP of")
@@ -70,6 +64,8 @@ def do_query(reg:registry.Registry, args:argparse.Namespace):
         "latest": args.latest,
     }
     assert len([x for x in relevant.values() if x not in [None,False]]) == 1, f"Specify one of {', '.join(relevant.keys())}"
+
+    print(f"Reading from {reg.filepath()}")
 
     if relevant["ip"] is not None:
         reg.name_of(relevant["ip"])
@@ -103,21 +99,18 @@ def main():
                 do_query(reg, args)
                 return
 
-            elif args.action == "listen":
+            elif args.action == "run":
 
                 if asBool(args.sweep):
                     sw = registry.Sweeper(args.database, args.sweep_interval, args.age_limit)
                     sw.start()
 
-                if not args.etc_hosts_server is None:
-                    # Import now, after logging has been configured
-                    from hostserver import EtcHostsServer
-                    hs = EtcHostsServer(reg, args.etc_hosts_server, args.http_port)
-                    hs.start()
+                ears = listener.Listener(reg, args.bind, args.port, args.broadcast)
+                ears.start()
 
-                listener.listen(reg, args.bind, args.port, args.broadcast)
+                # Arbitrarily wait til listener has started
+                time.sleep(0.01)
 
-            elif args.action == "send":
                 sender.send(args.ip, args.port, args.interval, args.broadcast, args.altname)
 
             else:

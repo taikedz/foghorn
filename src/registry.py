@@ -1,4 +1,5 @@
 import os
+import pathlib
 import time
 import sqlite3
 import datetime
@@ -7,10 +8,12 @@ from typing import Callable
 
 from foglog import GetLog
 
+
 class Registry:
     # All instances will share this lock, this is intentional.
     #  It seems sqlite connections do _not_ multithread, so we
     #  need to prevent different registry instances from colliding.
+    # NOTE - this is not shared across processes!
     REGISTRY_LOCK = threading.RLock()
 
     def __init__(self, dbfile:str):
@@ -30,6 +33,10 @@ class Registry:
                         seen DATETIME
                         );
                         """)
+            
+
+    def filepath(self):
+        return self._dbfile
 
 
     def execute(self, command, holders=()):
