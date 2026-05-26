@@ -36,6 +36,12 @@ class Config:
                     k = k.strip()
                     self._data[k] = v
 
+    def __str__(self):
+        return f"Config({self._data})"
+    
+    def __repr__(self):
+        return str(self)
+
 
     def over(self, other:'Config|None') -> 'Config':
         """ Use current configuration with precedence over the config supplied as argument.
