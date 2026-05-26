@@ -30,14 +30,14 @@ If you do not have sudo on your machine, you can simply run foghon as a regular 
 ```sh
 # You can optionally include `--altname myserver` to report an alternative name for your machine,
 #   the registry will show it as an entry titled `alt.myserver`
-python3 src/foghorn.py 192.168.42.0/24 --altname myserver
+./foghorn 192.168.42.0/24 --altname myserver
 ```
 
 ### Query
 
 Any machine running foghorn can query its local database. It is recommended to run each client such that it pings a specified subnetwork, so that all machines involved can mutually discover.
 
-To query your instance's registry run `foghorn.py [--database </path/to/db/file>] query --hosts`
+To query your instance's registry run `./foghorn [--database </path/to/db/file>] query --hosts`
 
 This will dump the peers that have reported in along with their altnames, in a hosts-file compatible notaiton.
 
@@ -55,6 +55,8 @@ Listener listens on the specified bin addres (defaulting to 0.0.0.0 which listen
 
 When run with `--sweep true`, foghorn cleans up old entries in the peers database older than a given amount of time - default 30 minutes, specifed by `--sweep-interval`.
 
+By default, foghorn listens on port 35053 ; after launching foghorn, you will need to ensure that the firewall allows UDP traffic on port 35053. You can specify to use a different port via the `--port PORT` option.
+
 
 **Sender** (client)
 
@@ -67,15 +69,15 @@ Args examples
 * `192.168.3.15` to send packets to a host listening at the specified IP.
 * `192.168.3.0/24 --interval 300` to send packets to all hosts in the specified range, every 300 seconds (which is 5 minutes).
 
-Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `foghorn.py 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `alt.chat-server`, which will be returned in queries.
+Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `./foghorn 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `alt.chat-server`, which will be returned in queries.
 
 ## Query
 
 Query the history of machines that have been reporting in for a given database:
 
-* for a name, see all IPs that claim to be that name : `foghorn.py --database path/to/database.db query --host testvm1`
-* for an IP, see all the names that claim to have that IP : `foghorn.py --database path/to/database.db query --ip 192.168.3.3`
-* show everything : `foghorn.py --database path/to/database.db query --dump`
+* for a name, see all IPs that claim to be that name : `./foghorn --database path/to/database.db query --host testvm1`
+* for an IP, see all the names that claim to have that IP : `./foghorn --database path/to/database.db query --ip 192.168.3.3`
+* show everything : `./foghorn --database path/to/database.db query --dump`
 
 You can set `DATABASE=` in a local `./foghorn-config.env` to avoid including the long path every time, or set it globally in `/etc/foghorn/config.env`
 
