@@ -8,6 +8,12 @@ A troubleshooting tool, put it on all machines, and find misconfigured IPs and h
 
 There is no TLS or authentication. NOT FOR USE ON THE INTERNET OR UNTRUSTED NETWORKS.
 
+## What it does
+
+On starting, foghorn creates a server to liten for any other foghorns on the same subnet. It also spins up a sender client that will periodically send out pings to all hosts on the subnet.
+
+This creates a little bit of chatter from each host every 5 minutes (by default)
+
 ## Quick Start
 
 ### With sudo access
@@ -29,7 +35,7 @@ If you do not have sudo on your machine, you can simply run foghon as a regular 
 
 ```sh
 # You can optionally include `--altname myserver` to report an alternative name for your machine,
-#   the registry will show it as an entry titled `alt.myserver`
+#   the registry will show it as an entry titled `myserver.fog`
 ./foghorn 192.168.42.0/24 --altname myserver
 ```
 
@@ -69,7 +75,7 @@ Args examples
 * `192.168.3.15` to send packets to a host listening at the specified IP.
 * `192.168.3.0/24 --interval 300` to send packets to all hosts in the specified range, every 300 seconds (which is 5 minutes).
 
-Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `./foghorn 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `alt.chat-server`, which will be returned in queries.
+Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `./foghorn 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `chat-server.fog`, which will be returned in queries.
 
 ## Query
 
@@ -95,7 +101,7 @@ This can then be further configured at `/etc/foghorn/config.env`. If you change 
 
 # License
 
-Foghorn is covered by the LGPLv3 license, (C) Tai Kedzierski
+Foghorn is covered by the LGPLv3 license, (C) 2026 Tai Kedzierski
 
 You may include it in proprietary solutions.
 

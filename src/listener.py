@@ -42,7 +42,7 @@ class Listener(threading.Thread):
             self.registry.register(message['host'], address)
             if message.get("altname"):
                 # Register a separate entry explicitly marked as an "alt" name (to avoid silly clashes)
-                # If a client says its altname is "testserver", it gets registered as "alt.testserver"
-                self.registry.register(f"alt.{message['altname']}", address)
+                # If a client says its altname is "testserver", it gets registered as "testserver.fog"
+                self.registry.register(f"{message['altname']}.fog", address)
 
             log.info(f"{address.ljust(15)}    {message['host']} alt={message['altname']}")
