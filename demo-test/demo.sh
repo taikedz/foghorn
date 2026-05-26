@@ -15,12 +15,15 @@ main() {
         interval=300
         /hostdata/foghorn --log ./${name}.log --database ./demo.${name}.db run ${ip} --interval ${interval}
         ;;
-    demo)
+    start)
         cd "$HEREDIR"
-        docker compose down
         docker compose up -d
         sleep 2
         docker ps | grep demo-test || docker logs demo-test-fog1-1
+        ( set -x
+            : Example of querying a database file
+            "$HEREDIR/../foghorn" --database "$HEREDIR/demo.fog1.db" query --dump
+        )
         ;;
     stop)
         cd "$HEREDIR"
@@ -31,7 +34,7 @@ main() {
         docker build ./ -t foghorn:latest
         ;;
     *)
-        echo "Unknown - use 'build' or 'demo'"
+        echo "Unknown - use 'build' 'start' or 'stop'"
         exit 1
         ;;
     esac
