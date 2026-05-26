@@ -7,7 +7,7 @@ SCRIPT="$(basename "$0")"
 set -euo pipefail
 
 main() {
-    exec python3 "$HEREDIR/foghorn.py"
+    exec python3 "$HEREDIR/src/foghorn.py" "$@"
 }
 
 main "$@"
