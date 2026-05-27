@@ -99,6 +99,16 @@ Run `bash services/install.sh <ip>` to install foghorn as a service in systemd.
 
 This can then be further configured at `/etc/foghorn/config.env`. If you change configurations, you need to `sudo systemctl restart foghorn`
 
+# Update etc/hosts
+
+You can apply foghorn data to your `/etc/hosts`:
+
+```sh
+sudo ./foghorn update-etc-hosts
+```
+
+This places the outputs of `./foghron query --hosts` into your `/etc/hosts` file. Running it multiple times is idempotent.
+
 # License
 
 Foghorn is covered by the LGPLv3 license, (C) 2026 Tai Kedzierski

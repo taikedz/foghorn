@@ -8,11 +8,13 @@ Listen for others pinging
 """
 
 import argparse
+import os
 import sqlite3
 import time
 
 from const import MINUTES, CONFIG
 from foglog import GetLog, InitLogFile
+import hostapply
 import listener
 import registry
 import sender
@@ -28,6 +30,8 @@ def parse_args():
     subs = parser.add_subparsers(dest="action", required=True)
 
     dump_p = subs.add_parser("dump-config")
+
+    applyhosts_p = subs.add_parser("apply-etc-hosts")
 
     run_p = subs.add_parser("run")
     run_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
@@ -92,16 +96,18 @@ def main():
             if args.action == "dump-config":
                 print(CONFIG.asDict())
                 return
+            
+            elif args.action == "apply-etc-hosts":
+                reg = registry.Registry(args.database, create=False)
+                hosts = reg.get_hosts()
+                hostapply.apply_hosts([f"{ip}  {' '.join(hostlist)}" for ip, hostlist in hosts.items()])
+                return
 
             elif args.action == "query":
+                reg = registry.Registry(args.database, create=False)
+                do_query(reg, args)
+                return
 
-                try:
-                    reg = registry.Registry(args.database, create=False)
-                    do_query(reg, args)
-                    exit(0)
-                except registry.NoDbFile as e:
-                    print(e)
-                    exit(1)
 
             elif args.action == "run":
 
@@ -127,6 +133,9 @@ def main():
             print("\nKTHXBAI")
             return
         except (AssertionError, OSError) as e:
+            print(f"OS error: {e}")
+            exit(1)
+        except registry.NoDbFile as e:
             print(e)
             exit(1)
         except (ValueError, AssertionError, KeyError, AttributeError):
