@@ -10,6 +10,10 @@ def apply_hosts(new_data_lines:list[str]):
     with open("/etc/hosts") as fh:
         etc_data = ''.join([s for s in fh.readlines() if not TAG in s])
 
+    if os.path.exists("/tmp/etc-hosts"):
+        if os.system("chown root:root /tmp/etc-hosts") != 0:
+            raise OSError("Failed to reown")
+
     with open("/tmp/etc-hosts", "w") as fh:
         fh.write(etc_data)
         fh.write(f"# =========== {TAG} ========== {NL}")
