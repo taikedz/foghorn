@@ -87,8 +87,6 @@ def main():
         InitLogFile(args.log)
     log = GetLog("foghorn")
 
-    reg = registry.Registry(args.database)
-
     while True:
         try:
             if args.action == "dump-config":
@@ -96,10 +94,18 @@ def main():
                 return
 
             elif args.action == "query":
-                do_query(reg, args)
-                return
+
+                try:
+                    reg = registry.Registry(args.database, create=False)
+                    do_query(reg, args)
+                    exit(0)
+                except registry.NoDbFile as e:
+                    print(e)
+                    exit(1)
 
             elif args.action == "run":
+
+                reg = registry.Registry(args.database)
 
                 if asBool(args.sweep):
                     sw = registry.Sweeper(args.database, args.sweep_interval, args.age_limit)

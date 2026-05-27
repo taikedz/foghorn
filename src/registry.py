@@ -1,5 +1,4 @@
 import os
-import pathlib
 import time
 import sqlite3
 import datetime
@@ -9,6 +8,9 @@ from typing import Callable
 from foglog import GetLog
 
 
+class NoDbFile(Exception): pass
+
+
 class Registry:
     # All instances will share this lock, this is intentional.
     #  It seems sqlite connections do _not_ multithread, so we
@@ -16,10 +18,11 @@ class Registry:
     # NOTE - this is not shared across processes!
     REGISTRY_LOCK = threading.RLock()
 
-    def __init__(self, dbfile:str):
+    def __init__(self, dbfile:str, create=True):
         self.log = GetLog("registry")
         self.log.info(f"Using database file {repr(dbfile)}")
         self._dbfile = dbfile
+        self._create = create
 
         exists = os.path.exists(self._dbfile)
 
@@ -37,17 +40,23 @@ class Registry:
 
     def filepath(self):
         return self._dbfile
+    
+
+    def connect(self):
+        if os.path.exists(self._dbfile) or self._create:
+            return sqlite3.connect(self._dbfile)
+        raise NoDbFile(f"No such database {self._dbfile}.")
 
 
     def execute(self, command, holders=()):
-        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as dbconn:
+        with self.REGISTRY_LOCK, self.connect() as dbconn:
             cursor = dbconn.cursor()
             cursor.execute(command, holders)
             dbconn.commit()
 
 
     def select(self, command, holders=()) -> list[list]:
-        with self.REGISTRY_LOCK, sqlite3.connect(self._dbfile) as dbconn:
+        with self.REGISTRY_LOCK, self.connect() as dbconn:
             cursor = dbconn.cursor()
             cursor.execute(command, holders)
             rows = cursor.fetchall()
