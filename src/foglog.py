@@ -44,8 +44,6 @@ def GetLog(name):
     return LOGS[name]
 
 
-def InitLogFile(filepath):
+def InitLogFile(filepath=None):
     global _LOGFILE
-    if not _LOGFILE:
-        _LOGFILE = "./foghorn.log"
-    _LOGFILE = filepath
+    _LOGFILE = filepath if filepath else "./foghorn.log"
