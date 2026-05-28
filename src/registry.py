@@ -145,17 +145,31 @@ class Registry:
             print(f"{ip}  {' '.join(hostlist)}")
 
 
-def sort_rows(rows:list[list], organise_on:int, sort_on:tuple[int,Callable]) -> list[list]:
+def sort_rows(rows:list[list], organise_on:tuple[int,Callable], sort_on:tuple[int,Callable]) -> list[list]:
+    """ Given a list of rows, gather each row against a theme column (organise_on column number - the Callable converts the value) e.g. hostname
+    then sort on the tuple of column number, and a callable type that will convert that value
+
+    Return the collections of rows, sorted on the converted organise_on value
+    """
     groupings:dict[str,list] = {}
+    if not isinstance(organise_on, tuple):
+        organise_on = (organise_on, lambda x:x)
+    group_id, group_convert = organise_on
+
     for items in rows:
-        k = items[organise_on]
+        k = items[group_convert(group_id)]
         if groupings.get(k) is None:
             groupings[k] = []
         groupings[k].append(items[:])
 
     end_list = []
+    if not isinstance(sort_on, tuple):
+        sort_on = (sort_on, lambda x:x)
     sort_idx, sort_type = sort_on
-    for items_list in groupings.values():
+
+    sorted_keys = sorted([k for k in groupings.keys()])
+    for k in sorted_keys:
+        items_list = groupings.get(k) or []
         items_list.sort(key=lambda item: sort_type(item[sort_idx]))
         end_list.extend(items_list)
 

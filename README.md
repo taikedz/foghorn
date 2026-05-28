@@ -75,7 +75,7 @@ Args examples
 * `192.168.3.15` to send packets to a host listening at the specified IP.
 * `192.168.3.0/24 --interval 300` to send packets to all hosts in the specified range, every 300 seconds (which is 5 minutes).
 
-Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `./foghorn 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `chat-server.fog`, which will be returned in queries.
+Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `./foghorn 192.168.3.15 --altname=chat-server` . The listeners will then additionally register a machine named `chat-server.fog`, which will be returned in their query runs.
 
 ## Query
 
@@ -107,7 +107,7 @@ You can apply foghorn data to your `/etc/hosts`:
 sudo ./foghorn update-etc-hosts
 ```
 
-This places the outputs of `./foghron query --hosts` into your `/etc/hosts` file. Running it multiple times is idempotent.
+This places the outputs of `./foghorn query --hosts` into your `/etc/hosts` file. Running it multiple times is idempotent.
 
 # License
 
