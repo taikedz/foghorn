@@ -98,13 +98,13 @@ def main():
                 return
             
             elif args.action == "apply-etc-hosts":
-                reg = registry.Registry(args.database, create=False)
+                reg = registry.Registry(args.database)
                 hosts = reg.get_hosts()
                 hostapply.apply_hosts([f"{ip}  {' '.join(hostlist)}" for ip, hostlist in hosts.items()])
                 return
 
             elif args.action == "query":
-                reg = registry.Registry(args.database, create=False)
+                reg = registry.Registry(args.database, readonly=True)
                 do_query(reg, args)
                 return
 
@@ -134,9 +134,6 @@ def main():
             return
         except (AssertionError, OSError) as e:
             print(f"OS error: {e}")
-            exit(1)
-        except registry.NoDbFile as e:
-            print(e)
             exit(1)
         except (ValueError, AssertionError, KeyError, AttributeError):
             raise

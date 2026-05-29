@@ -8,9 +8,6 @@ from typing import Callable
 from foglog import GetLog
 
 
-class NoDbFile(Exception): pass
-
-
 class Registry:
     # All instances will share this lock, this is intentional.
     #  It seems sqlite connections do _not_ multithread, so we
@@ -18,15 +15,17 @@ class Registry:
     # NOTE - this is not shared across processes!
     REGISTRY_LOCK = threading.RLock()
 
-    def __init__(self, dbfile:str, create=True):
+    def __init__(self, dbfile:str, readonly=False):
         self.log = GetLog("registry")
         self.log.info(f"Using database file {repr(dbfile)}")
         self._dbfile = dbfile
-        self._create = create
+        self._dbaccess = dbfile
+        if readonly:
+            self._dbaccess = f"file:{dbfile}?mode=ro"
 
         exists = os.path.exists(self._dbfile)
 
-        if not exists:
+        if not exists and not readonly:
             self.log.info("Creating new tables")
             self.execute("""
                 CREATE TABLE Peers (
@@ -43,9 +42,7 @@ class Registry:
     
 
     def connect(self):
-        if os.path.exists(self._dbfile) or self._create:
-            return sqlite3.connect(self._dbfile)
-        raise NoDbFile(f"No such database {self._dbfile}.")
+        return sqlite3.connect(self._dbaccess)
 
 
     def execute(self, command, holders=()):
