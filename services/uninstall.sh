@@ -21,4 +21,10 @@ blat -client
 blat -server
 blat ""
 
+for token in "$@"; do
+    if [[ "$token" = "purge" ]]; then
+        rm -rf /var/foghorn /etc/foghorn /var/log/foghorn
+    fi
+done
+
 echo "Done."
