@@ -33,6 +33,10 @@ def parse_args():
 
     applyhosts_p = subs.add_parser("apply-etc-hosts")
 
+    discover_p = subs.add_parser("discover") # action to send the echo request
+    discover_p.add_argument("ips", nargs="+", default=CONFIG.get("SERVER_IP"))
+    discover_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port foe listener to listen on")
+
     run_p = subs.add_parser("run")
     run_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
 
@@ -106,6 +110,10 @@ def main():
             elif args.action == "query":
                 reg = registry.Registry(args.database, readonly=True)
                 do_query(reg, args)
+                return
+            
+            elif args.action == "discover":
+                sender.discover(args.ips, args.port)
                 return
 
 

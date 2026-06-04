@@ -4,6 +4,7 @@ import threading
 
 from foglog import GetLog
 import registry
+import sender
 
 def dolog(fn, message):
     fn(message)
@@ -39,10 +40,17 @@ class Listener(threading.Thread):
             address, _port = endpoint
             message = json.loads(data.decode('utf-8'))
 
+            # print(f"Got from {address} : {message}")
+
             self.registry.register(message['host'], address)
             if message.get("altname"):
                 # Register a separate entry explicitly marked as an "alt" name (to avoid silly clashes)
                 # If a client says its altname is "testserver", it gets registered as "testserver.fog"
                 self.registry.register(f"{message['altname']}.fog", address)
 
-            log.info(f"{address.ljust(15)}    {message['host']} alt={message['altname']}")
+            if message.get("echo", "false").lower() == "true":
+                log.info(f"Replying to {address}")
+                # print(f"Send-back : {address}")
+                sender.send_once(address, self.listen_port, reason="echo")
+
+            log.info(f"{address.ljust(15)}    {message.get('host')} alt={message.get('altname')}")
