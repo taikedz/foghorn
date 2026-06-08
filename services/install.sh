@@ -52,6 +52,7 @@ main() {
     systemctl restart foghorn
 
     echo "Foghorn installed and started. Change configs at /etc/foghorn/config.env"
+    echo "Ensure your firewall is allowing $(grep "PORT=" "$CONFIG_FILE") on UDP"
     echo ""
 }
 

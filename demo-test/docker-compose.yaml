@@ -19,8 +19,6 @@ services:
 
   fog2:
     image: foghorn:latest
-    depends_on:
-    - fog1   # Ensure fog1 is started before we ping it
     volumes:
     - ../:/hostdata
     - ./:/demodata
@@ -31,8 +29,6 @@ services:
 
   fog3:
     image: foghorn:latest
-    depends_on:
-    - fog1   # Ensure fog1 is started before we ping it
     volumes:
     - ../:/hostdata
     - ./:/demodata

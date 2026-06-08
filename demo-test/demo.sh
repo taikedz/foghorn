@@ -35,6 +35,10 @@ main() {
         cd "$HEREDIR"
         docker build ./ -t foghorn:latest
         ;;
+    query)
+        cd "$HEREDIR"
+        ../foghorn --database "$2" query --hosts
+        ;;
     *)
         echo "Unknown - use 'build' 'start' or 'stop'"
         exit 1

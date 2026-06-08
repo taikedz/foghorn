@@ -17,12 +17,15 @@ if [[ "$UID" != 0 ]]; then
     exit 1
 fi
 
+# Old versions
 blat -client
 blat -server
+
+# Current
 blat ""
 
 for token in "$@"; do
-    if [[ "$token" = "purge" ]]; then
+    if [[ "$token" = "--purge" ]]; then
         rm -rf /var/foghorn /etc/foghorn /var/log/foghorn
     fi
 done
