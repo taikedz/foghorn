@@ -61,12 +61,19 @@ class Registry:
         return rows
 
 
-    def register(self, name, ip):
+    def register(self, name, ip, altname=None):
         timestamp = datetime.datetime.now().isoformat()
         self.execute(
             "INSERT INTO Peers (hostname, ip, seen) VALUES (?,?,?)",
             (name, ip, timestamp)
             )
+        if altname:
+            # Register a separate entry explicitly marked as an "alt" name (to avoid silly clashes)
+            # If a client says its altname is "testserver", it gets registered as "testserver.fog"
+            self.execute(
+                "INSERT INTO Peers (hostname, ip, seen) VALUES (?,?,?)",
+                (f"{altname}.fog", ip, timestamp)
+                )
         
     def sweep(self, olderthan:datetime.datetime):
         """ Select all entries from DB
@@ -139,7 +146,7 @@ class Registry:
     def print_hosts(self):
         ips = self.get_hosts()
         for ip, hostlist in ips.items():
-            print(f"{ip}  {' '.join(hostlist)}")
+            print(f"{ip}  {' '.join([x if x else 'NONE.INVALID' for x in hostlist])}")
 
 
 def sort_rows(rows:list[list], organise_on:int|tuple[int,Callable], sort_on:int|tuple[int,Callable]) -> list[list]:

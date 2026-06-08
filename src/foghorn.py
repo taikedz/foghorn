@@ -113,7 +113,11 @@ def main():
                 return
             
             elif args.action == "discover":
-                sender.discover(args.ips, args.port)
+                reg = registry.Registry(args.database)
+                try:
+                    sender.discover(args.ips, args.port, reg)
+                except Exception as e:
+                    raise AssertionError("Invalid") from e
                 return
 
 
@@ -133,7 +137,7 @@ def main():
 
                 # This will cause all hosts to ping-back, seeding our listener
                 #  with available IPs. Causes quite a bit of extra chatter
-                sender.discover([args.ip], args.port)
+                sender.discover([args.ip], args.port, reg)
 
                 # This is to just do the regular send at intervals, with no ping-back request
                 sender.send(args.ip, args.port, args.interval, args.broadcast, args.altname)
@@ -154,7 +158,7 @@ def main():
             # Other OSError instances might be less of a bother
             print("FATAL.")
             exit(1)
-        except (ValueError, AssertionError, KeyError, AttributeError):
+        except (ValueError, AssertionError, KeyError, TypeError, AttributeError):
             raise
         except sqlite3.OperationalError as e:
             print(f"FATAL : {e}")
