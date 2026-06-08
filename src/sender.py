@@ -52,7 +52,7 @@ def discover(server_ips, port, reg:registry.Registry):
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.setblocking(False)
-    timeout_seconds = 0.001
+    timeout_seconds = 0.05
 
     # Reference for this loop: _scatter() function, above
     for base_ip in server_ips:
@@ -66,8 +66,6 @@ def discover(server_ips, port, reg:registry.Registry):
                     address, _port = endpoint
                     message = json.loads(response.decode("utf-8"))
                     reg.register(message.get("host"), address, message.get("altname"))
-                else:
-                    print(ready)
                 
-            except PermissionError as e:
+            except PermissionError:
                 print(f"Warning: Could not send to {target}")

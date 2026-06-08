@@ -114,10 +114,7 @@ def main():
             
             elif args.action == "discover":
                 reg = registry.Registry(args.database)
-                try:
-                    sender.discover(args.ips, args.port, reg)
-                except Exception as e:
-                    raise AssertionError("Invalid") from e
+                sender.discover(args.ips, args.port, reg)
                 return
 
 

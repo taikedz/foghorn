@@ -20,8 +20,10 @@ class Registry:
         self.log.info(f"Using database file {repr(dbfile)}")
         self._dbfile = dbfile
         self._dbaccess = dbfile
+        self._dbaccess_uri = False
         if readonly:
             self._dbaccess = f"file:{dbfile}?mode=ro"
+            self._dbaccess_uri = True
 
         exists = os.path.exists(self._dbfile)
 
@@ -42,7 +44,7 @@ class Registry:
     
 
     def connect(self):
-        return sqlite3.connect(self._dbaccess, uri=True)
+        return sqlite3.connect(self._dbaccess, uri=self._dbaccess_uri)
 
 
     def execute(self, command, holders=()):
