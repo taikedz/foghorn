@@ -8,7 +8,6 @@ Listen for others pinging
 """
 
 import argparse
-import os
 import sqlite3
 import time
 
@@ -18,6 +17,7 @@ import hostapply
 import listener
 import registry
 import sender
+import signalhandle
 from util import asBool
 
 
@@ -35,13 +35,15 @@ def parse_args():
 
     discover_p = subs.add_parser("discover") # action to send the echo request
     discover_p.add_argument("ips", nargs="+", default=CONFIG.get("SERVER_IP"))
-    discover_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port foe listener to listen on")
+    discover_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
+    discover_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port to send on")
+    discover_p.add_argument("--nat-origin", "-O", action="store_true", help="Attempt to have servers respond back to UDP through NAT")
 
     run_p = subs.add_parser("run")
     run_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
 
     run_p.add_argument("--bind", default=CONFIG.get("BIND", "0.0.0.0"), help="Address for listener to bind to")
-    run_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port foe listener to listen on")
+    run_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port for listener to listen on")
     run_p.add_argument("--sweep", "-W", choices=["true", "false"], default=CONFIG.get("SWEEP"), help="Whether to remove old entries")
     run_p.add_argument("--sweep-interval", "-N", type=int, default=30 * MINUTES, help="How frequently to sweep the database entries (seconds)")
     run_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
@@ -95,6 +97,8 @@ def main():
         InitLogFile(args.log)
     log = GetLog("foghorn")
 
+    signalhandle.setup()
+
     while True:
         try:
             if args.action == "dump-config":
@@ -113,13 +117,15 @@ def main():
                 return
             
             elif args.action == "discover":
+                sender.set_altname(args.altname)
                 reg = registry.Registry(args.database)
-                sender.discover(args.ips, args.port, reg)
+                as_server = not args.nat_origin
+                sender.discover(args.ips, args.port, reg, to_server=as_server)
                 return
 
 
             elif args.action == "run":
-
+                sender.set_altname(args.altname)
                 reg = registry.Registry(args.database)
 
                 if asBool(args.sweep):
@@ -133,11 +139,11 @@ def main():
                 time.sleep(0.01)
 
                 # This will cause all hosts to ping-back, seeding our listener
-                #  with available IPs. Causes quite a bit of extra chatter
+                #  with available IPs.
                 sender.discover([args.ip], args.port, reg)
 
                 # This is to just do the regular send at intervals, with no ping-back request
-                sender.send(args.ip, args.port, args.interval, args.broadcast, args.altname)
+                sender.send(args.ip, args.port, args.interval, args.broadcast)
 
             else:
                 print(f"Unknown action {repr(args.action)} . Run with '--help'")

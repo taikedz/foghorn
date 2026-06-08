@@ -25,7 +25,7 @@ services:
     - ../:/hostdata
     - ./:/demodata
     hostname: demo-fog2
-    command: bash ./demo.sh spin-up fog3 192.168.42.248/29
+    command: bash ./demo.sh spin-up fog2 192.168.42.248/29
     networks:
     - fog
 
@@ -37,6 +37,6 @@ services:
     - ../:/hostdata
     - ./:/demodata
     hostname: demo-fog3
-    command: bash ./demo.sh spin-up fog2 192.168.42.248/29
+    command: bash ./demo.sh spin-up fog3 192.168.42.248/29
     networks:
     - fog

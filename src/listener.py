@@ -44,8 +44,13 @@ class Listener(threading.Thread):
 
             self.registry.register(message['host'], address, message.get("altname"))
 
-            if message.get("echo", "false").lower() == "true":
-                log.info(f"Replying to {address}")
-                sender.send_once(address, response_port)
-
             log.info(f"{address.ljust(15)}    {message.get('host')} alt={message.get('altname')}")
+
+            echo_mode = message.get("echo", "").lower()
+            if echo_mode in ["server", "origin"]:
+                log.info(f"Replying to {address} {echo_mode}")
+
+                if echo_mode == "origin":
+                    sender.send_once(address, response_port)
+                else:
+                    sender.send_once(address, self.listen_port)
