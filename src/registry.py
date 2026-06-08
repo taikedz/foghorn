@@ -42,7 +42,7 @@ class Registry:
     
 
     def connect(self):
-        return sqlite3.connect(self._dbaccess)
+        return sqlite3.connect(self._dbaccess, uri=True)
 
 
     def execute(self, command, holders=()):
