@@ -29,6 +29,12 @@ Instead of a subnet, you can also specify a single IP.
 
 See `/etc/foghorn/config.env` for further options. After adjusting configurations, run `sudo systemctl restart foghorn`
 
+You will need to allow the UDP port on your firewall, by default `35053`
+
+```sh
+sudo ufw allow 35053/udp
+```
+
 ### Sudo-less
 
 If you do not have sudo on your machine, you can simply run foghon as a regular user process

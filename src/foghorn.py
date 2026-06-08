@@ -131,6 +131,11 @@ def main():
                 # Arbitrarily wait til listener has started
                 time.sleep(0.01)
 
+                # This will cause all hosts to ping-back, seeding our listener
+                #  with available IPs. Causes quite a bit of extra chatter
+                sender.discover([args.ip], args.port)
+
+                # This is to just do the regular send at intervals, with no ping-back request
                 sender.send(args.ip, args.port, args.interval, args.broadcast, args.altname)
 
             else:
