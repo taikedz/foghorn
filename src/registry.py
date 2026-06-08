@@ -142,7 +142,7 @@ class Registry:
             print(f"{ip}  {' '.join(hostlist)}")
 
 
-def sort_rows(rows:list[list], organise_on:tuple[int,Callable], sort_on:tuple[int,Callable]) -> list[list]:
+def sort_rows(rows:list[list], organise_on:int|tuple[int,Callable], sort_on:int|tuple[int,Callable]) -> list[list]:
     """ Given a list of rows, gather each row against a theme column (organise_on column number - the Callable converts the value) e.g. hostname
     then sort on the tuple of column number, and a callable type that will convert that value
 

@@ -147,6 +147,12 @@ def main():
             return
         except (AssertionError, OSError) as e:
             print(f"OS error: {e}")
+            if "Network is unreachable" in str(e):
+                # We certainly want to keep going in this case
+                time.sleep(30)
+                continue
+            # Other OSError instances might be less of a bother
+            print("FATAL.")
             exit(1)
         except (ValueError, AssertionError, KeyError, AttributeError):
             raise
@@ -156,7 +162,7 @@ def main():
         except Exception as e:
             print(f"ERROR : {type(e)}:{e}")
             print("Starting again....\n=========")
-            time.sleep(0.5) # If there's an irremediable error, loop slowly ...
+            time.sleep(2) # If there's an irremediable error, loop slowly ...
 
 
 if __name__ == "__main__":
