@@ -20,6 +20,7 @@ This creates a little bit of chatter from each host every 5 minutes (by default)
 
 ```sh
 # Create a default foghorn service which will ping the full subnetwork specified every 5 minutes
+# (REPLACE with the actual IP/subnet you intend to be on)
 sudo services/install.sh 192.168.42.0/24
 ```
 
@@ -42,6 +43,7 @@ If you do not have sudo on your machine, you can simply run foghon as a regular 
 ```sh
 # You can optionally include `--altname myserver` to report an alternative name for your machine,
 #   the registry will show it as an entry titled `myserver.fog`
+# (REPLACE with the actual IP/subnet you intend to be on)
 ./foghorn 192.168.42.0/24 --altname myserver
 ```
 
@@ -81,14 +83,14 @@ Args examples
 * `192.168.3.15` to send packets to a host listening at the specified IP.
 * `192.168.3.0/24 --interval 300` to send packets to all hosts in the specified range, every 300 seconds (which is 5 minutes).
 
-Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `./foghorn 192.168.3.15 --altname=chat-server` . The listeners will then additionally register a machine named `chat-server.fog`, which will be returned in their query runs.
+Your machine may have a corporate mandatory name like `unit4567-corp` ; if you want to report a custom name run as `./foghorn 192.168.3.15 --altname=chat-server` . The listener will then additionally register a machine named `chat-server.fog`, which will be returned in queries.
 
 ## Query
 
 Query the history of machines that have been reporting in for a given database:
 
 * for a name, see all IPs that claim to be that name : `./foghorn --database path/to/database.db query --host testvm1`
-* for an IP, see all the names that claim to have that IP : `./foghorn --database path/to/database.db query --ip 192.168.3.3`
+* for an IP, see all the names that claim to have that IP e.g. : `./foghorn --database path/to/database.db query --ip 192.168.3.3` (use your own IP)
 * show everything : `./foghorn --database path/to/database.db query --dump`
 
 You can set `DATABASE=` in a local `./foghorn-config.env` to avoid including the long path every time, or set it globally in `/etc/foghorn/config.env`
@@ -113,7 +115,7 @@ You can apply foghorn data to your `/etc/hosts`:
 sudo ./foghorn update-etc-hosts
 ```
 
-This places the outputs of `./foghorn query --hosts` into your `/etc/hosts` file. Running it multiple times is idempotent.
+This places the outputs of `./foghron query --hosts` into your `/etc/hosts` file. Running it multiple times is idempotent.
 
 # License
 
@@ -122,3 +124,4 @@ Foghorn is covered by the LGPLv3 license, (C) 2026 Tai Kedzierski
 You may include it in proprietary solutions.
 
 But you really should not. It is not fit for customer production use. **It is an internal ops tool**.
+
