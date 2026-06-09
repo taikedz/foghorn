@@ -18,8 +18,13 @@ add_config() {
     if [[ ! -f "$CONFIG_FILE" ]]; then
         cp "$HEREDIR/config.env.example" "$CONFIG_FILE"
     fi
-    if [[ -n "$1" ]]; then
+
+    if [[ -n "${1:-}" ]]; then
         sed -r -e "s|SERVER_IP=.*|SERVER_IP=${1}|" -i "$CONFIG_FILE"
+    fi
+
+    if [[ -n "${2:-}" ]]; then
+        sed -r -e "s|ALTNAME=.*|ALTNAME=${2}|" -i "$CONFIG_FILE"
     fi
 }
 

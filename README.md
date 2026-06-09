@@ -22,6 +22,10 @@ This creates a little bit of chatter from each host every 5 minutes (by default)
 # Create a default foghorn service which will ping the full subnetwork specified every 5 minutes
 # (REPLACE with the actual IP/subnet you intend to be on)
 sudo services/install.sh 192.168.42.0/24
+
+# If you would like to give the server an alternative name, specify it
+#    this one will show up to peers as `web-server.fog`
+sudo services/install.sh 192.168.42.0/24 web-server
 ```
 
 A server will start listening, with default configurations. It will also periodically send out a ping every 5 minutes to each individual address on the specified subnet.
