@@ -7,7 +7,16 @@ SCRIPT="$(basename "$0")"
 set -euo pipefail
 
 main() {
-    exec python3 "$HEREDIR/src/foghorn.py" "$@"
+    if [[ "$*" =~ ^update ]]; then
+        shift
+        cd "$HEREDIR"
+        set -e
+        git pull
+        sudo bash "$HEREDIR/services/install.sh" "$@"
+        sudo systemctl restart foghorn
+    else
+        exec python3 "$HEREDIR/src/foghorn.py" "$@"
+    fi
 }
 
 main "$@"

@@ -98,6 +98,8 @@ def main():
     log = GetLog("foghorn")
 
     signalhandle.setup()
+    if hasattr(args, "altname"):
+        sender.set_altname(args.altname)
 
     while True:
         try:
@@ -117,7 +119,6 @@ def main():
                 return
             
             elif args.action == "discover":
-                sender.set_altname(args.altname)
                 reg = registry.Registry(args.database)
                 as_server = not args.nat_origin
                 sender.discover(args.ips, args.port, reg, to_server=as_server)
@@ -125,7 +126,6 @@ def main():
 
 
             elif args.action == "run":
-                sender.set_altname(args.altname)
                 reg = registry.Registry(args.database)
 
                 if asBool(args.sweep):
