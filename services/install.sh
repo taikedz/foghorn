@@ -24,7 +24,7 @@ add_config() {
     fi
 
     if [[ -n "${2:-}" ]]; then
-        sed -r -e "s|ALTNAME=.*|ALTNAME=${2}|" -i "$CONFIG_FILE"
+        sed -r -e "s|#?ALTNAME=.*|ALTNAME=${2}|" -i "$CONFIG_FILE"
     fi
 }
 
@@ -50,7 +50,7 @@ main() {
         sed -e "s|%COMMAND%|python3 $PARENTDIR/src/foghorn.py --log /var/log/foghorn/foghorn.log run|"
     ) < "$HEREDIR/foghorn.service" > "$service_file"
 
-    add_config "${IP:-}"
+    add_config "${IP:-}" "$@"
 
     systemctl daemon-reload
     systemctl enable foghorn
