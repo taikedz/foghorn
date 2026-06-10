@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import sqlite3
 import datetime
@@ -7,6 +8,7 @@ from typing import Callable
 
 from foglog import GetLog
 
+NAMEPAT=re.compile(r"^[a-zA-Z][a-zA-Z0-9_-]+$")
 
 class Registry:
     # All instances will share this lock, this is intentional.
@@ -72,10 +74,15 @@ class Registry:
         if altname:
             # Register a separate entry explicitly marked as an "alt" name (to avoid silly clashes)
             # If a client says its altname is "testserver", it gets registered as "testserver.fog"
-            self.execute(
-                "INSERT INTO Peers (hostname, ip, seen) VALUES (?,?,?)",
-                (f"{altname}.fog", ip, timestamp)
-                )
+            # We split along whitespace to avoid evading our fogging of names
+            altnames = altname.split()
+            for altname_x in altnames:
+                if not re.match(NAMEPAT, altname_x):
+                    continue
+                self.execute(
+                    "INSERT INTO Peers (hostname, ip, seen) VALUES (?,?,?)",
+                    (f"{altname_x}.fog", ip, timestamp)
+                    )
         
     def sweep(self, olderthan:datetime.datetime):
         """ Select all entries from DB
