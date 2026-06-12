@@ -80,7 +80,11 @@ def discover(server_ips, port, reg:registry.Registry, to_server=True):
                         response, endpoint = sock.recvfrom(1024)
                         address, _port = endpoint
                         message = json.loads(response.decode("utf-8"))
-                        reg.register(message.get("host"), address, message.get("altname"))
+                        if reg is None:
+                            print(message) # .... put this elsewhere ?
+                        else:
+                            reg.register(message.get("host"), address, message.get("altname"))
+
                     
                 except PermissionError:
                     print(f"Warning: Could not send to {target}")
