@@ -39,6 +39,11 @@ def parse_args():
     discover_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port to send on")
     discover_p.add_argument("--nat-origin", "-O", action="store_true", help="Attempt to have servers respond back to UDP through NAT")
 
+    ping_p = subs.add_parser("ping")
+    ping_p.add_argument("ip", help="The IP to send a single discovery ping to")
+    ping_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
+    ping_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port to send on")
+
     run_p = subs.add_parser("run")
     run_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
 
@@ -124,6 +129,9 @@ def main():
                 sender.discover(args.ips, args.port, reg, to_server=as_server)
                 return
 
+            elif args.action == "ping":
+                sender.discover([args.ip], args.port, None, to_server=False)
+                return
 
             elif args.action == "run":
                 reg = registry.Registry(args.database)
