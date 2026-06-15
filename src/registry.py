@@ -95,27 +95,35 @@ class Registry:
         for id in rmpeers.keys():
             self.execute("DELETE FROM Peers WHERE id = ?;", (id, ))
 
-    def ip_of(self, hostname:str):
+    def ips_of(self, hostname:str):
         """ Find all seen IPs for given hostname(s)
         """
         res = self.select("SELECT ip FROM Peers WHERE hostname = ?;", (hostname,))
-        print("\n".join(list(set([v[0] for v in res]))))
+        return list(set([v[0] for v in res]))
 
 
-    def name_of(self, ip:str):
+    def latest_ip_of(self, hostname:str) -> str|None:
+        res = self.select("SELECT seen,ip FROM Peers WHERE hostname = ?;", (hostname,))
+        if res:
+            res.sort(key=lambda part:datetime.datetime.fromisoformat(part[0]))
+            return res[-1][1]
+        else:
+            return None
+
+
+    def names_of(self, ip:str):
         """ Find all seen names for given IP
         """
         res = self.select("SELECT hostname FROM Peers WHERE ip = ?;", (ip,))
-        print("\n".join(list(set([v[0] for v in res]))))
+        return list(set([v[0] for v in res]))
 
 
-    def dump(self):
+    def entry_lines(self):
         """ Print all entries
         """
         res = self.select("SELECT seen,ip,hostname FROM Peers;")
         res = sort_rows(res, organise_on=2, sort_on=(0, datetime.datetime.fromisoformat) )
-        print("\n".join( [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res] )
-        )
+        return [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res]
 
 
     def latest_pairs(self):
@@ -133,13 +141,13 @@ class Registry:
 
         res = []
         [res.append([d.isoformat(),k[0],k[1]]) for k,d in redux.items()]
-
-        print("\n".join( [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res] )
-        )
+        return [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res]
 
 
     def get_hosts(self) -> dict[str,list[str]]:
-        """ Print all entries
+        """ Retreive all entries in registry
+
+        Returns a map of (ip -> hosts[])
         """
         res = self.select("SELECT ip,hostname FROM Peers;")
         ips = {}
@@ -150,12 +158,6 @@ class Registry:
                 ips[ip].append(hostname)
 
         return ips
-
-
-    def print_hosts(self):
-        ips = self.get_hosts()
-        for ip, hostlist in ips.items():
-            print(f"{ip}  {' '.join([x if x else 'NONE.INVALID' for x in hostlist])}")
 
 
 def sort_rows(rows:list[list], organise_on:int|tuple[int,Callable], sort_on:int|tuple[int,Callable]) -> list[list]:

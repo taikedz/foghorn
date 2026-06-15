@@ -11,6 +11,7 @@ import argparse
 import sqlite3
 import time
 
+import awaiter
 from const import MINUTES, CONFIG
 from foglog import GetLog, InitLogFile
 import hostapply
@@ -43,6 +44,12 @@ def parse_args():
     ping_p.add_argument("ip", help="The IP to send a single discovery ping to")
     ping_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
     ping_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port to send on")
+
+    await_p = subs.add_parser("await")
+    await_p.add_argument("hosts", nargs="+", help="Host names to await")
+    await_p.add_argument("--ssh", help="SSH command to run once host is found")
+    await_p.add_argument("--user", help="User for ssh command")
+    await_p.add_argument("--timeout", type=int, default=0, help="Seconds to wait before timing out")
 
     run_p = subs.add_parser("run")
     run_p.add_argument("ips", nargs="*", default=CONFIG.get("SERVER_IP", "127.0.0.1").split(","), help="The IPs/subnets to regularly ping (comma-separated list)")
@@ -82,15 +89,21 @@ def do_query(reg:registry.Registry, args:argparse.Namespace):
     print(f"Reading from {reg.filepath()}")
 
     if relevant["ip"] is not None:
-        reg.name_of(relevant["ip"])
+        res = reg.names_of(relevant["ip"])
+        print("\n".join(res))
     if relevant["host"] is not None:
-        reg.ip_of(relevant["host"])
+        res = reg.ips_of(relevant["host"])
+        print("\n".join(res))
     if relevant["dump"]:
-        reg.dump()
+        entries = reg.entry_lines()
+        print("\n".join( entries ))
     if relevant["latest"]:
-        reg.latest_pairs()
+        pairs = reg.latest_pairs()
+        print("\n".join( pairs ))
     if relevant["hosts"]:
-        reg.print_hosts()
+        ips = reg.get_hosts()
+        for ip, hostlist in ips.items():
+            print(f"{ip}  {' '.join([x if x else 'NONE.INVALID' for x in hostlist])}")
 
 
 def main():
@@ -130,6 +143,10 @@ def main():
 
             elif args.action == "ping":
                 sender.discover([args.ip], args.port, None, to_server=False)
+                return
+
+            elif args.action == "await":
+                awaiter.await_hosts(args.database, args.hosts, args.ssh, args.timeout, args.user)
                 return
 
             elif args.action == "run":
