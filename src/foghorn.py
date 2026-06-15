@@ -34,7 +34,7 @@ def parse_args():
     applyhosts_p = subs.add_parser("apply-etc-hosts")
 
     discover_p = subs.add_parser("discover") # action to send the echo request
-    discover_p.add_argument("ips", nargs="+", default=CONFIG.get("SERVER_IP"))
+    discover_p.add_argument("ips", nargs="+", help="IPs to ping, which should respond back to us")
     discover_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
     discover_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port to send on")
     discover_p.add_argument("--nat-origin", "-O", action="store_true", help="Attempt to have servers respond back to UDP through NAT")
@@ -45,7 +45,7 @@ def parse_args():
     ping_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port to send on")
 
     run_p = subs.add_parser("run")
-    run_p.add_argument("ip", nargs="?", default=CONFIG.get("SERVER_IP"))
+    run_p.add_argument("ips", nargs="*", default=CONFIG.get("SERVER_IP", "127.0.0.1").split(","), help="The IPs/subnets to regularly ping (comma-separated list)")
 
     run_p.add_argument("--bind", default=CONFIG.get("BIND", "0.0.0.0"), help="Address for listener to bind to")
     run_p.add_argument("--port", "-p", default=CONFIG.getInt("PORT"), type=int, help="Port for listener to listen on")
@@ -54,7 +54,6 @@ def parse_args():
     run_p.add_argument("--age-limit", "-L", type=int, default=30 * MINUTES, help="Age of entry after which to remove (seconds)")
 
     run_p.add_argument("--altname", "-A", default=CONFIG.get("ALTNAME"), help="Register an additional alternative hostname")
-    run_p.add_argument("--broadcast", "-B", action="store_true", help="Send using broadcast mode (requires supplied IP to be a network CIDR spec)")
     run_p.add_argument("--interval", "-n", default=10 * MINUTES, type=int, help="Interval in seconds, how frequently to ping server")
 
     query_p = subs.add_parser("query", help="Query local database file")
@@ -140,7 +139,7 @@ def main():
                     sw = registry.Sweeper(args.database, args.sweep_interval, args.age_limit)
                     sw.start()
 
-                ears = listener.Listener(reg, args.bind, args.port, args.broadcast)
+                ears = listener.Listener(reg, args.bind, args.port)
                 ears.start()
 
                 # Arbitrarily wait til listener has started
@@ -148,10 +147,10 @@ def main():
 
                 # This will cause all hosts to ping-back, seeding our listener
                 #  with available IPs.
-                sender.discover([args.ip], args.port, reg)
+                sender.discover(args.ips, args.port, reg)
 
                 # This is to just do the regular send at intervals, with no ping-back request
-                sender.send(args.ip, args.port, args.interval, args.broadcast)
+                sender.send(args.ips, args.port, args.interval)
 
             else:
                 print(f"Unknown action {repr(args.action)} . Run with '--help'")

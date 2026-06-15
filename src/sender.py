@@ -6,6 +6,7 @@ import socket
 
 from const import CONFIG
 import registry
+import foglog
 
 ALTNAME = None
 
@@ -14,36 +15,34 @@ def set_altname(altname):
     ALTNAME = altname
 
 
-def send(send_ip, send_port, interval, broadcast):
-    send_addr = (send_ip, send_port)
+def send(send_ip_list, send_port, interval):
     message_obj = {"altname": ALTNAME, "host": socket.gethostname()}
     message_json = json.dumps(message_obj).encode('utf-8')
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    if broadcast:
-        print("(Broadcast mode - may not work on corporate LANs)")
-        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    log_ = foglog.GetLog("send")
+    log_.info(f"INTEVAL = {interval}")
+    log_.info(f"DEST = {send_ip_list}")
 
-    print(f"Pinging to {send_addr} every {interval} seconds")
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     while True:
-        if broadcast:
-            # Use _actual_ broadcast
-            # This may not be available on corporate networks though
-            sock.sendto(message_json, send_addr)
-        else:
+        for send_ip in send_ip_list:
+            send_addr = (send_ip, send_port)
             _scatter(sock, send_addr, message_json)
         time.sleep(interval)
 
 
 def _scatter(sock:socket.socket, send_addr:tuple[str,int],message:bytes):
+    log_ = foglog.GetLog("send")
+
     base_ip, port = send_addr
     for ip in ipaddress.ip_network(base_ip):
         target = (str(ip), port)
         try:
             sock.sendto(message, target)
         except PermissionError as e:
-            print(f"Warning: Could not send to {target}")
+            # Very likely a broadcast destination
+            log_.info(f"Warning: Could not send to {target}")
 
 
 def send_once(ip, port, **extras):
@@ -85,6 +84,6 @@ def discover(server_ips, port, reg:registry.Registry, to_server=True):
                         else:
                             reg.register(message.get("host"), address, message.get("altname"))
 
-                    
+
                 except PermissionError:
                     print(f"Warning: Could not send to {target}")
