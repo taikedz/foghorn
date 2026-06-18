@@ -19,6 +19,7 @@ import listener
 import registry
 import sender
 import signalhandle
+import querying
 from util import asBool
 
 
@@ -73,38 +74,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def do_query(reg:registry.Registry, args:argparse.Namespace):
-    # FIXME - this will access the sqlite db file from an _entirely unrelated process_
-    #         which means that no threading lock will actually work
-    #         Either implement a filesystem based lock, or use an API on localhost
-    relevant = {
-        "ip": args.ip,
-        "host": args.host,
-        "dump": args.dump,
-        "hosts": args.hosts,
-        "latest": args.latest,
-    }
-    assert len([x for x in relevant.values() if x not in [None,False]]) == 1, f"Specify one of {', '.join(relevant.keys())}"
-
-    print(f"Reading from {reg.filepath()}")
-
-    if relevant["ip"] is not None:
-        res = reg.names_of(relevant["ip"])
-        print("\n".join(res))
-    if relevant["host"] is not None:
-        res = reg.ips_of(relevant["host"])
-        print("\n".join(res))
-    if relevant["dump"]:
-        entries = reg.entry_lines()
-        print("\n".join( entries ))
-    if relevant["latest"]:
-        pairs = reg.latest_pairs()
-        print("\n".join( pairs ))
-    if relevant["hosts"]:
-        ips = reg.get_hosts()
-        for ip, hostlist in ips.items():
-            print(f"{ip}  {' '.join([x if x else 'NONE.INVALID' for x in hostlist])}")
-
 
 def main():
     args = parse_args()
@@ -132,7 +101,7 @@ def main():
 
             elif args.action == "query":
                 reg = registry.Registry(args.database, readonly=True)
-                do_query(reg, args)
+                querying.do_query(reg, args)
                 return
             
             elif args.action == "discover":
@@ -180,18 +149,21 @@ def main():
             print(f"OS error: {e}")
             if "Network is unreachable" in str(e):
                 # We certainly want to keep going in this case
+                log.warning(str(e))
                 time.sleep(30)
                 continue
             # Other OSError instances might be less of a bother
-            print("FATAL.")
+            log.error("FATAL.")
             exit(1)
         except (ValueError, AssertionError, KeyError, TypeError, AttributeError):
             raise
         except sqlite3.OperationalError as e:
             print(f"FATAL : {e}")
+            log.error(e)
             exit(99)
         except Exception as e:
-            print(f"ERROR : {type(e)}:{e}")
+            log.error(f"{type(e)}:{e}")
+            log.info("-- Restart")
             print("Starting again....\n=========")
             time.sleep(2) # If there's an irremediable error, loop slowly ...
 

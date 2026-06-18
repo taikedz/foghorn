@@ -4,7 +4,6 @@ import time
 import sqlite3
 import datetime
 import threading
-from typing import Callable
 
 from foglog import GetLog
 
@@ -122,13 +121,13 @@ class Registry:
         """ Print all entries
         """
         res = self.select("SELECT seen,ip,hostname FROM Peers;")
-        res = sort_rows(res, organise_on=2, sort_on=(0, datetime.datetime.fromisoformat) )
-        return [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res]
+        res.sort(key=lambda arr:(datetime.datetime.fromisoformat(arr[0]), arr[2].lower()))
+        namemax = max([len(h) for t,i,h in res])
+        return [f"{i.ljust(15)} {h.ljust(namemax)}   # {t}" for t,i,h in res]
 
 
     def latest_pairs(self):
         res = self.select("SELECT seen,ip,hostname FROM Peers;")
-        res = sort_rows(res, organise_on=2, sort_on=(0, datetime.datetime.fromisoformat) )
 
         redux = {}
         for d,i,h in res:
@@ -141,7 +140,9 @@ class Registry:
 
         res = []
         [res.append([d.isoformat(),k[0],k[1]]) for k,d in redux.items()]
-        return [f"{i.ljust(15)} {h.ljust(20)}   # {t}" for t,i,h in res]
+        res.sort(key=lambda arr:arr[2].lower())
+        namemax = max([len(h) for t,i,h in res])
+        return [f"{i.ljust(15)} {h.ljust(namemax)}   # {t}" for t,i,h in res]
 
 
     def get_hosts(self) -> dict[str,list[str]]:
@@ -158,37 +159,6 @@ class Registry:
                 ips[ip].append(hostname)
 
         return ips
-
-
-def sort_rows(rows:list[list], organise_on:int|tuple[int,Callable], sort_on:int|tuple[int,Callable]) -> list[list]:
-    """ Given a list of rows, gather each row against a theme column (organise_on column number - the Callable converts the value) e.g. hostname
-    then sort on the tuple of column number, and a callable type that will convert that value
-
-    Return the collections of rows, sorted on the converted organise_on value
-    """
-    groupings:dict[str,list] = {}
-    if not isinstance(organise_on, tuple):
-        organise_on = (organise_on, lambda x:x)
-    group_id, group_convert = organise_on
-
-    for items in rows:
-        k = items[group_convert(group_id)]
-        if groupings.get(k) is None:
-            groupings[k] = []
-        groupings[k].append(items[:])
-
-    end_list = []
-    if not isinstance(sort_on, tuple):
-        sort_on = (sort_on, lambda x:x)
-    sort_idx, sort_type = sort_on
-
-    sorted_keys = sorted([k for k in groupings.keys()])
-    for k in sorted_keys:
-        items_list = groupings.get(k) or []
-        items_list.sort(key=lambda item: sort_type(item[sort_idx]))
-        end_list.extend(items_list)
-
-    return end_list
 
 
 class Sweeper(threading.Thread):
